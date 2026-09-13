@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -9,6 +9,10 @@ from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
 from typing import List, Optional
 from datetime import datetime, timezone
+
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 from emergentintegrations.llm.chat import LlmChat, UserMessage, TextDelta, StreamDone
 
@@ -22,7 +26,18 @@ client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 EMERGENT_LLM_KEY = os.environ['EMERGENT_LLM_KEY']
 
+def client_ip(request: Request):
+    """Prefer the real client IP from X-Forwarded-For (behind the ingress proxy)."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=client_ip)
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 api_router = APIRouter(prefix="/api")
 
 logging.basicConfig(level=logging.INFO,
@@ -44,18 +59,18 @@ class ContentItem(BaseModel):
 
 
 class ContactCreate(BaseModel):
-    name: str
+    name: str = Field(..., min_length=1, max_length=100)
     email: EmailStr
-    topic: str
-    dialect: Optional[str] = None
-    message: str
+    topic: str = Field(..., min_length=1, max_length=50)
+    dialect: Optional[str] = Field(default=None, max_length=20)
+    message: str = Field(..., min_length=1, max_length=2000)
 
 
 class GenerateRequest(BaseModel):
-    category: str
-    dialect: str
-    topic: str
-    vibe: Optional[str] = "viral"
+    category: str = Field(..., max_length=40)
+    dialect: str = Field(..., max_length=20)
+    topic: str = Field(..., min_length=1, max_length=300)
+    vibe: Optional[str] = Field(default="viral", max_length=30)
 
 
 class GenerateResponse(BaseModel):
@@ -63,8 +78,8 @@ class GenerateResponse(BaseModel):
 
 
 class PromptIdeaRequest(BaseModel):
-    idea: str
-    dialect: Optional[str] = None
+    idea: str = Field(..., min_length=1, max_length=500)
+    dialect: Optional[str] = Field(default=None, max_length=20)
 
 
 # ------------------------- Helpers -------------------------
@@ -152,20 +167,22 @@ async def get_content_item(item_id: str):
 
 
 @api_router.post("/generate", response_model=GenerateResponse)
-async def generate(req: GenerateRequest):
+@limiter.limit("20/minute")
+async def generate(request: Request, req: GenerateRequest):
     if req.category not in CATEGORIES:
         raise HTTPException(status_code=400, detail="Invalid category")
     text = ""
     try:
         text = await run_llm(build_prompt(req))
-    except Exception as e:
+    except Exception:
         logger.exception("Generation failed")
-        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+        raise HTTPException(status_code=500, detail="Generation failed. Please try again.")
     return GenerateResponse(text=text)
 
 
 @api_router.post("/generate-prompt", response_model=GenerateResponse)
-async def generate_prompt(req: PromptIdeaRequest):
+@limiter.limit("20/minute")
+async def generate_prompt(request: Request, req: PromptIdeaRequest):
     if not req.idea.strip():
         raise HTTPException(status_code=400, detail="Idea is required")
     culture = dialect_label(req.dialect) if req.dialect else "Middle Eastern / Kurdish"
@@ -179,14 +196,15 @@ async def generate_prompt(req: PromptIdeaRequest):
     text = ""
     try:
         text = await run_llm(prompt)
-    except Exception as e:
+    except Exception:
         logger.exception("Prompt generation failed")
-        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+        raise HTTPException(status_code=500, detail="Generation failed. Please try again.")
     return GenerateResponse(text=text)
 
 
 @api_router.post("/contact")
-async def submit_contact(payload: ContactCreate):
+@limiter.limit("5/minute")
+async def submit_contact(request: Request, payload: ContactCreate):
     doc = payload.model_dump()
     doc["id"] = str(uuid.uuid4())
     doc["created_at"] = datetime.now(timezone.utc).isoformat()

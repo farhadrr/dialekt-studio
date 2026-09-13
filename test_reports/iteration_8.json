@@ -1,0 +1,24 @@
+{
+  "summary": "Iteration 8: Verified slowapi key_func fix using X-Forwarded-For. Added two new pytest cases: (1) same XFF -> 5x200 then 429; (2) different XFF -> 200 (not throttled). Ran full backend regression + focused frontend smoke over public REACT_APP_BACKEND_URL. 27/27 backend tests PASS (100%). Frontend: Home loads (RTL Arabic default), language switcher toggles to LTR EN, Library /library/tiktok-scripts shows 7 cards with Unsplash preview images and all dialect filter chips including Badini, PromptGenerator on /library/ai-prompts generates prompt (970 chars in ~15s) and Copy button works, Contact form submits with success message 'Thanks! We'll get back to you soon.' No regressions detected.",
+  "backend_issues": { "critical": [], "minor": [] },
+  "frontend_issues": { "ui_bugs": [], "integration_issues": [], "design_issues": [] },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/backend/tests/test_security.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "client_ip() reads first token of X-Forwarded-For directly; if the ingress does NOT strip client-supplied XFF, a malicious client could set an arbitrary XFF to sidestep rate limits or exhaust another IP's quota. Recommend restricting trust to specific proxy chains (e.g., use FastAPI/starlette ProxyHeadersMiddleware with forwarded_allow_ips or take the last-but-one token from XFF).",
+    "server.py still uses deprecated @app.on_event('startup'/'shutdown'); migrate to lifespan handler.",
+    "CORS: allow_origins='*' with allow_credentials=True is invalid per spec; whitelist explicit origins in prod."
+  ],
+  "updated_files": ["/app/backend/tests/test_security.py"],
+  "success_rate": { "backend": "100% (27/27)", "frontend": "100% (all flows)" },
+  "test_credentials": "N/A - no auth",
+  "seed_data_creation": "None persistent. TEST_-prefixed contact submissions inserted during tests.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Rate limit is now per-XFF. To exercise it, hit http://localhost:8001/api/contact directly and set X-Forwarded-For header to a fixed value; 5x200 then 429. A different XFF returns 200. Public URL requests always carry ingress-provided XFF, so bursts >5 via curl+public URL will also 429 if source IP is stable. LLM latency ~5-25s -> keep timeouts >=45s. AI Prompts UI lives at /library/ai-prompts (PromptGenerator embedded above cards). Contact page uses native <select> with topic values ['general','dialect','partner','bug'].",
+  "rca of the issue": "No new issue. Previous ingress IP-shuffling limitation resolved by keying rate limit on X-Forwarded-For (real client IP)."
+}
