@@ -6,6 +6,7 @@ import { api, CATEGORIES, accentMap } from "@/lib/api";
 import { ContentCard } from "@/components/ContentCard";
 import { AdBanner } from "@/components/AdBanner";
 import { GeneratorDialog } from "@/components/GeneratorDialog";
+import { PromptGenerator } from "@/components/PromptGenerator";
 import { Button } from "@/components/ui/button";
 
 export default function Library() {
@@ -81,6 +82,9 @@ export default function Library() {
           />
         </div>
       </div>
+
+      {/* Dynamic prompt generator (AI Prompts only) */}
+      {cat.id === "ai-prompts" && <PromptGenerator dialects={dialects} />}
 
       {/* Dialect filter pills */}
       <div className="flex flex-wrap gap-2 mb-8">

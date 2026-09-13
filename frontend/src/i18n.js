@@ -56,6 +56,11 @@ export const translations = {
     footer_rights: "All rights reserved.",
     vibe_viral: "Viral", vibe_funny: "Funny", vibe_emotional: "Emotional",
     vibe_educational: "Educational", vibe_cinematic: "Cinematic",
+    pg_title: "Instant Prompt Generator",
+    pg_desc: "Type a simple idea and get a pro Midjourney / Flux prompt in seconds.",
+    pg_ph: "e.g. I want a picture in Iraq at sunset…",
+    pg_btn: "Generate Prompt",
+    pg_result: "Your pro prompt",
   },
   ar: {
     brand: "ديالكت ستوديو",
@@ -114,6 +119,11 @@ export const translations = {
     footer_rights: "جميع الحقوق محفوظة.",
     vibe_viral: "فيرال", vibe_funny: "كوميدي", vibe_emotional: "عاطفي",
     vibe_educational: "تعليمي", vibe_cinematic: "سينمائي",
+    pg_title: "مولّد البرومبت الفوري",
+    pg_desc: "اكتب فكرة بسيطة واحصل على برومبت احترافي لميدجورني / فلكس في ثوانٍ.",
+    pg_ph: "مثال: عايز صورة في العراق وقت الغروب…",
+    pg_btn: "أنشئ البرومبت",
+    pg_result: "برومبتك الاحترافي",
   },
   ku: {
     brand: "دیالێکت ستۆدیۆ",
@@ -172,6 +182,11 @@ export const translations = {
     footer_rights: "هەموو مافەکان پارێزراون.",
     vibe_viral: "ڤایراڵ", vibe_funny: "پێکەنیناوی", vibe_emotional: "هەستیار",
     vibe_educational: "فێرکاری", vibe_cinematic: "سینەمایی",
+    pg_title: "دروستکەری خێرای پرۆمپت",
+    pg_desc: "بیرۆکەیەکی سادە بنووسە و لە چەند چرکەیەکدا پرۆمپتی پیشەیی میدجەرنی / فلەکس وەربگرە.",
+    pg_ph: "نموونە: وێنەیەکم دەوێت لە عێراق لە کاتی ئاوابوون…",
+    pg_btn: "پرۆمپت دروستبکە",
+    pg_result: "پرۆمپتە پیشەییەکەت",
   },
 };
 

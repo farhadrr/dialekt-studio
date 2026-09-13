@@ -62,6 +62,11 @@ class GenerateResponse(BaseModel):
     text: str
 
 
+class PromptIdeaRequest(BaseModel):
+    idea: str
+    dialect: Optional[str] = None
+
+
 # ------------------------- Helpers -------------------------
 def dialect_label(code: str) -> str:
     for d in DIALECTS:
@@ -154,6 +159,26 @@ async def generate(req: GenerateRequest):
         text = await run_llm(build_prompt(req))
     except Exception as e:
         logger.exception("Generation failed")
+        raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
+    return GenerateResponse(text=text)
+
+
+@api_router.post("/generate-prompt", response_model=GenerateResponse)
+async def generate_prompt(req: PromptIdeaRequest):
+    if not req.idea.strip():
+        raise HTTPException(status_code=400, detail="Idea is required")
+    culture = dialect_label(req.dialect) if req.dialect else "Middle Eastern / Kurdish"
+    prompt = (
+        f"Turn this short idea into ONE professional, highly-detailed English AI image-generation prompt "
+        f"suitable for Midjourney, Flux or DALL-E. Idea: \"{req.idea}\". "
+        f"Where relevant, root the visuals in {culture} culture and aesthetics. "
+        f"Include subject, setting, lighting, camera/lens, mood, and color palette, and end with technical "
+        f"parameters like --ar 3:4 --style raw --v 6. Return ONLY the final prompt text, no explanation."
+    )
+    try:
+        text = await run_llm(prompt)
+    except Exception as e:
+        logger.exception("Prompt generation failed")
         raise HTTPException(status_code=500, detail=f"Generation failed: {e}")
     return GenerateResponse(text=text)
 

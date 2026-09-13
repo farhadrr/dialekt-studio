@@ -155,3 +155,42 @@ def test_generate_invalid_category(client):
         "category": "bogus", "dialect": "ar-EG", "topic": "x", "vibe": "viral"
     })
     assert r.status_code == 400
+
+
+
+# --- Expanded AI prompts library ---
+def test_ai_prompts_expanded_count_and_ids(client):
+    r = client.get(f"{API}/content", params={"category": "ai-prompts"})
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) >= 23, f"Expected >=23 ai-prompts, got {len(data)}"
+    ids = {x["id"] for x in data}
+    for i in range(6, 24):
+        assert f"ai-{i}" in ids, f"Missing ai-{i}"
+    for x in data:
+        assert x.get("body", "").strip(), f"Empty body for {x['id']}"
+        url = x.get("preview_image_url", "")
+        assert url.startswith("https://") and "unsplash.com" in url
+
+
+# --- Generate-prompt endpoint ---
+def test_generate_prompt_with_dialect(client):
+    payload = {"idea": "I want a picture in Iraq at sunset", "dialect": "ar-IRQ"}
+    r = client.post(f"{API}/generate-prompt", json=payload, timeout=60)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "text" in data and isinstance(data["text"], str)
+    assert len(data["text"].strip()) > 30
+
+
+def test_generate_prompt_no_dialect(client):
+    payload = {"idea": "a person in lush green nature"}
+    r = client.post(f"{API}/generate-prompt", json=payload, timeout=60)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert len(data["text"].strip()) > 30
+
+
+def test_generate_prompt_empty_idea(client):
+    r = client.post(f"{API}/generate-prompt", json={"idea": "  "})
+    assert r.status_code == 400
