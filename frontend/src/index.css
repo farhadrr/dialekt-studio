@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --background: 220 14% 5%;
+    --foreground: 220 14% 96%;
+    --card: 230 24% 12%;
+    --card-foreground: 220 14% 96%;
+    --popover: 230 24% 12%;
+    --popover-foreground: 220 14% 96%;
+    --primary: 184 100% 50%;
+    --primary-foreground: 220 14% 5%;
+    --secondary: 228 22% 9%;
+    --secondary-foreground: 220 14% 96%;
+    --muted: 228 22% 12%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 340 100% 50%;
+    --accent-foreground: 220 14% 96%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 228 20% 20%;
+    --input: 228 20% 20%;
+    --ring: 184 100% 50%;
+    --radius: 0.9rem;
+}
+
+* {
+    border-color: hsl(var(--border));
+}
+
+body {
+    margin: 0;
+    background-color: #0B0C10;
+    color: hsl(var(--foreground));
+    font-family: "Inter", "Tajawal", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, .font-heading {
+    font-family: "Outfit", "Cairo", sans-serif;
+}
+
+/* RTL typography */
+[dir="rtl"] body,
+[dir="rtl"] {
+    font-family: "Tajawal", "Cairo", sans-serif;
+}
+[dir="rtl"] h1,
+[dir="rtl"] h2,
+[dir="rtl"] h3,
+[dir="rtl"] h4,
+[dir="rtl"] .font-heading {
+    font-family: "Cairo", "Tajawal", sans-serif;
+}
+
+::selection {
+    background: #00F2FE;
+    color: #0B0C10;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0B0C10; }
+::-webkit-scrollbar-thumb { background: #282C3D; border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: #3a4160; }
+
+.grain {
+    background-image: radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 3px 3px;
+}
+
+.text-gradient {
+    background: linear-gradient(100deg, #00F2FE 0%, #FF0050 55%, #FFB800 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+@layer base {
+    [data-debug-wrapper="true"] { display: contents !important; }
+}

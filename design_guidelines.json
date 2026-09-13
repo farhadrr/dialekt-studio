@@ -1,0 +1,137 @@
+{
+  "project_title": "AI Content Creator Hub (Arabic & Kurdish TikTok Scripts & Prompts)",
+  "context": {
+    "app_type": "hybrid_fullstack",
+    "target_audience": "TikTok creators, social media managers, and AI visual artists in Arabic and Kurdish speaking regions",
+    "emotional_tone": "High-energy creator economy, cutting-edge AI utility, Middle Eastern cultural resonance, dark studio vibe",
+    "archetype": "Electric Creator Studio & Performance Precision"
+  },
+  "typography": {
+    "font_families": {
+      "english_heading": "'Outfit', 'Plus Jakarta Sans', sans-serif",
+      "english_body": "'Inter', sans-serif",
+      "arabic_kurdish_heading": "'Cairo', 'Readex Pro', sans-serif",
+      "arabic_kurdish_body": "'Tajawal', 'IBM Plex Sans Arabic', sans-serif",
+      "mono": "'JetBrains Mono', monospace"
+    },
+    "scale": {
+      "h1_hero": "text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight",
+      "h2_section": "text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight",
+      "h3_card": "text-xl sm:text-2xl font-semibold",
+      "body": "text-sm sm:text-base leading-relaxed",
+      "label_overline": "text-xs font-mono uppercase tracking-widest text-cyan-400"
+    },
+    "google_fonts_url": "https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700;800&family=Readex+Pro:wght@400;600;700&family=Tajawal:wght@400;500;700&display=swap"
+  },
+  "colors": {
+    "mode": "dark",
+    "palette": {
+      "background": "#0B0C10",
+      "surface_dark": "#12141D",
+      "surface_card": "#181A26",
+      "surface_border": "#282C3D",
+      "primary_cyan": "#00F2FE",
+      "secondary_pink": "#FF0050",
+      "gold_accent": "#FFB800",
+      "text_primary": "#F3F4F6",
+      "text_secondary": "#9CA3AF",
+      "text_muted": "#6B7280",
+      "ad_banner_bg": "#151824",
+      "ad_banner_border": "#2E344A"
+    },
+    "gradients": {
+      "hero_text": "bg-gradient-to-r from-cyan-400 via-pink-500 to-amber-400 bg-clip-text text-transparent",
+      "tiktok_accent": "bg-gradient-to-r from-[#FF0050] to-[#00F2FE]",
+      "card_hover_glow": "hover:shadow-[0_0_25px_rgba(0,242,254,0.15)] transition-all duration-300",
+      "ad_zone_gradient": "bg-gradient-to-r from-cyan-950/30 via-purple-950/20 to-pink-950/30"
+    }
+  },
+  "rtl_support": {
+    "mechanism": "Dynamic 'dir' attribute on root html or outer app container (dir='rtl' for Arabic & Kurdish, dir='ltr' for English)",
+    "dialects_supported": [
+      {"code": "ar-EG", "name_en": "Egyptian Arabic", "name_native": "العامية المصرية"},
+      {"code": "ar-LEV", "name_en": "Levantine Arabic", "name_native": "الشامية"},
+      {"code": "ar-GULF", "name_en": "Gulf / Saudi Arabic", "name_native": "الخليجية / السعودية"},
+      {"code": "ar-IRQ", "name_en": "Iraqi Arabic", "name_native": "العراقية"},
+      {"code": "ar-MAG", "name_en": "North African / Maghrebi", "name_native": "الدارجة المغربية"},
+      {"code": "ku-SOR", "name_en": "Kurdish (Sorani)", "name_native": "کوردی (سۆرانی)"},
+      {"code": "ku-BAD", "name_en": "Kurdish (Kurmanji/Badini)", "name_native": "کوردی (کۆرمانجی)"}
+    ]
+  },
+  "layout_and_grids": {
+    "bento_grid_mode": "MODE A: THE TETRIS GRID for 3 Main Categories",
+    "category_cards": [
+      {
+        "id": "tiktok-scripts",
+        "title": "TikTok Scripts",
+        "title_ar": "سيناريوهات تيك توك",
+        "title_ku": "سکریپتەکانی تیک تۆک",
+        "description": "Viral hooks, retention body scripts, and call-to-action frameworks formatted specifically for short-form video algorithms.",
+        "badge": "Viral Ready",
+        "span": "col-span-12 md:col-span-8 lg:col-span-8",
+        "bg_accent": "border-cyan-500/30 hover:border-cyan-400"
+      },
+      {
+        "id": "ai-prompts",
+        "title": "AI Image Prompts",
+        "title_ar": "مؤشرات الصور بالذكاء الاصطناعي",
+        "title_ku": "پرۆمپتەکانی وێنەی ژیری دەستکرد",
+        "description": "High-detail prompts for Midjourney v6, Flux, and DALL-E 3 optimized for Middle Eastern characters, culture, and cinematic aesthetics.",
+        "badge": "Midjourney & Flux",
+        "span": "col-span-12 md:col-span-4 lg:col-span-4",
+        "bg_accent": "border-pink-500/30 hover:border-pink-400"
+      },
+      {
+        "id": "content-ideas",
+        "title": "Content Ideas",
+        "title_ar": "أفكار محتوى مبتكرة",
+        "title_ku": "بۆچوونی ناوەڕۆک",
+        "description": "Trending video concepts, dialect-specific comedic skits, educational breakdowns, and storyboards tailored for regional virality.",
+        "badge": "Trending Concepts",
+        "span": "col-span-12 lg:col-span-12",
+        "bg_accent": "border-amber-500/30 hover:border-amber-400"
+      }
+    ],
+    "ad_banner_zones": [
+      {
+        "zone": "Leaderboard Top Banner",
+        "dimensions": "728x90 (Desktop) / 320x100 (Mobile)",
+        "location": "Directly below navigation bar, above Hero section",
+        "styling": "Styled with neat 1px border, subtle 'ADVERTISEMENT' label, non-intrusive dark glass container"
+      },
+      {
+        "zone": "In-Feed Native Banner",
+        "dimensions": "Responsive Fluid Grid Banner",
+        "location": "Inserted after every 6 script/prompt cards in library feed",
+        "styling": "Matches content card border and radius with 'Sponsored' badge so it flows naturally"
+      },
+      {
+        "zone": "Sidebar Rectangular Ad",
+        "dimensions": "300x250 Medium Rectangle",
+        "location": "Sticky desktop sidebar beside Script detail viewer & On-Demand AI Generator tool",
+        "styling": "Glassmorphic container with custom CTA preview fallback if ad block enabled"
+      }
+    ]
+  },
+  "interactive_features": {
+    "on_demand_generator": "Modal & Drawer component allowing users to generate customized script hooks or Midjourney prompts by selecting Dialect + Topic + Vibe",
+    "copy_to_clipboard": "One-click copy button with Sonner toast feedback ('Script Copied!' / 'تم نسخ السيناريو!')",
+    "language_dialect_selector": "Interactive filter pill bar + drop-down in header for EN/AR/KU switching",
+    "like_and_save_bookmark": "Local storage backed saved prompts & script library",
+    "contact_form": "Full Contact Us page with topic selection, dialect feedback, and clear response notification"
+  },
+  "image_urls": {
+    "hero_studio": "https://images.unsplash.com/photo-1673767298248-b128f17f89af?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "arabic_creator_desk": "https://images.unsplash.com/photo-1764664035163-f8f29058e557?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "filmmaker_setup": "https://images.unsplash.com/photo-1758553026412-bc1da0ebd366?crop=entropy&cs=srgb&fm=jpg&q=85",
+    "podcaster_studio": "https://images.unsplash.com/photo-1664277497095-424e085175e8?crop=entropy&cs=srgb&fm=jpg&q=85"
+  },
+  "instructions_to_main_agent": [
+    "Ensure RTL support is seamless: wrap the app layout in dir={language === 'en' ? 'ltr' : 'rtl'} and use flex gap / spacing classes that respond well to RTL.",
+    "Do NOT use transparent backgrounds on headers or overlays; use dark glassmorphic backgrounds like backdrop-blur-xl bg-[#0B0C10]/80 border-b border-[#282C3D].",
+    "Ensure banner ad zones look clean and integrated with 'ADVERTISEMENT' or 'إعلان' badges so they look like intentional monetization zones rather than broken placeholders.",
+    "Add 'data-testid' to all buttons, links, search filters, dialect tabs, copy buttons, and contact inputs.",
+    "Use Sonner for toast notifications when user copies scripts, saves items, or submits contact forms.",
+    "Populate the library with rich, realistic content examples for TikTok scripts and AI prompts in Egyptian, Gulf, Levantine, Iraqi, and Kurdish dialects."
+  ]
+}
