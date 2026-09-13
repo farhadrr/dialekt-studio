@@ -38,8 +38,13 @@ export default function Home() {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <span
-              className="inline-block text-xs uppercase tracking-normal text-neon-cyan mb-5"
-              style={{ letterSpacing: "0px" }}
+              dir="auto"
+              className="connected-text inline-block text-xs uppercase tracking-normal text-neon-cyan mb-5"
+              style={{
+                letterSpacing: "0px",
+                fontVariantLigatures: "normal",
+                fontFeatureSettings: "'liga' 1, 'rlig' 1, 'dlig' 1",
+              }}
             >
               {t("hero_eyebrow")}
             </span>
