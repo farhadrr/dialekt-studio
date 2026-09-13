@@ -37,7 +37,7 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
-            <span className="inline-block text-xs font-mono uppercase tracking-[0.2em] text-neon-cyan mb-5">
+            <span className="inline-block text-xs font-mono uppercase text-neon-cyan mb-5">
               {t("hero_eyebrow")}
             </span>
             <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.05] tracking-tight">
