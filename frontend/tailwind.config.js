@@ -9,9 +9,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        heading: ["Outfit", "Cairo", "sans-serif"],
-        body: ["Inter", "Tajawal", "sans-serif"],
-        arabic: ["Cairo", "Tajawal", "sans-serif"],
+        heading: ["Outfit", "Vazirmatn", "Noto Kufi Arabic", "sans-serif"],
+        body: ["Inter", "Vazirmatn", "Noto Kufi Arabic", "sans-serif"],
+        arabic: ["Vazirmatn", "Noto Kufi Arabic", "sans-serif"],
         mono: ["'JetBrains Mono'", "monospace"],
       },
       borderRadius: {

@@ -33,26 +33,26 @@ body {
     margin: 0;
     background-color: #0B0C10;
     color: hsl(var(--foreground));
-    font-family: "Inter", "Tajawal", sans-serif;
+    font-family: "Inter", "Vazirmatn", "Noto Kufi Arabic", sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
 h1, h2, h3, h4, .font-heading {
-    font-family: "Outfit", "Cairo", sans-serif;
+    font-family: "Outfit", "Vazirmatn", "Noto Kufi Arabic", sans-serif;
 }
 
-/* RTL typography */
+/* RTL typography — Vazirmatn fully supports Arabic & Kurdish shaping (ۆ ێ ە) */
 [dir="rtl"] body,
 [dir="rtl"] {
-    font-family: "Tajawal", "Cairo", sans-serif;
+    font-family: "Vazirmatn", "Noto Kufi Arabic", sans-serif;
 }
 [dir="rtl"] h1,
 [dir="rtl"] h2,
 [dir="rtl"] h3,
 [dir="rtl"] h4,
 [dir="rtl"] .font-heading {
-    font-family: "Cairo", "Tajawal", sans-serif;
+    font-family: "Vazirmatn", "Noto Kufi Arabic", sans-serif;
 }
 
 ::selection {
@@ -65,6 +65,14 @@ h1, h2, h3, h4, .font-heading {
     letter-spacing: 0px !important;
     font-variant-ligatures: normal;
     font-feature-settings: 'liga' 1, 'rlig' 1, 'dlig' 1;
+}
+
+/* RTL safeguard: positive letter-spacing disconnects Arabic/Kurdish joined glyphs */
+[dir="rtl"] .tracking-wide,
+[dir="rtl"] .tracking-wider,
+[dir="rtl"] .tracking-widest,
+[dir="rtl"] [class*="tracking-["] {
+    letter-spacing: 0 !important;
 }
 
 /* Custom scrollbar */

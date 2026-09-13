@@ -1,0 +1,29 @@
+{
+  "summary": "Kurdish font-shaping bug-fix verification round. Backend: 14/14 pytest cases pass (dialects=6 with ku-BAD 'Badini Kurdish' + native 'کوردی بادینی'; ku-SOR removed; /api/content?dialect=ku-BAD returns items; /api/generate works for ku-BAD and all 3 categories; /api/contact submits; invalid email → 422). Frontend: (a) default state has dir='rtl' lang='ar'; clicking [data-testid=lang-ku] sets dir='rtl' lang='ku', [data-testid=lang-en] sets dir='ltr' lang='en', [data-testid=lang-ar] sets dir='rtl' lang='ar'. (b) document.fonts.check('16px Vazirmatn')=true and check('700 20px Vazirmatn')=true after fonts.ready. (c) getComputedStyle(document.body).fontFamily = 'Vazirmatn, \"Noto Kufi Arabic\", sans-serif' across the whole site. (d) All Kurdish-character text nodes (containing ۆ ێ ە) — including nav links سەرەتا/سکریپتی تیک تۆک/پرۆمپتی AI/بیرۆکەی ناوەڕۆک/پەیوەندی, brand span دیالێکت ستۆدیۆ, hero H1 بیرۆکەی ناوەڕۆک, and body paragraphs on /library/content-ideas after clicking [data-testid=dialect-filter-ku-BAD] — all resolve to Vazirmatn family and letterSpacing='normal'. (e) Card body raw text codepoints show only U+0020 word separators (no per-letter spaces) → glyphs render connected. (f) Copy button clicked successfully. Home hero + leaderboard ad + 3 category cards + dialect filter pills all render. Overall bug fix is verified working end-to-end.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "/library/content-ideas (and Home hero eyebrow)", "issues": ["A small uppercase-badge SPAN above the hero H1 applies letter-spacing: 2.4px to its Kurdish text (e.g., 'بیرۆکەی ترێند'). Positive letter-spacing forcibly disconnects Arabic/Kurdish joining glyphs on that specific label. Consider gating tracking utilities so they apply only when [dir=ltr], or add letter-spacing: 0 within [dir=rtl] .connected-text rule. Minor cosmetic — does NOT affect main content, cards or nav which all render correctly connected."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional/minor) Neutralize positive letter-spacing for RTL text on eyebrow/badge labels — e.g., add [dir='rtl'] .tracking-wider, [dir='rtl'] .tracking-widest { letter-spacing: 0 !important; } or apply the existing .connected-text class to those small label spans."
+  ],
+  "critical_code_review_comments": [
+    "index.css body font-family lists Inter first: 'Inter, \"Vazirmatn\", \"Noto Kufi Arabic\", sans-serif'. That still works because Inter has no Arabic/Kurdish glyphs so the browser falls back to Vazirmatn for those codepoints. The [dir=rtl] override explicitly puts Vazirmatn first which is the correct/robust approach. No action needed.",
+    "Tailwind utility classes such as tracking-wider/tracking-widest applied on Arabic/Kurdish text will silently break shaping. Consider a global RTL-safe rule to override them."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None. Backend re-seeds content on startup as before.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Backend regression file: /app/backend/tests/test_backend.py (14 tests, ~28s, 4 real Gemini calls). Kurdish font bug is fixed — global Vazirmatn is applied and Kurdish text is connected. Only remaining minor issue is positive letter-spacing on small badge labels in RTL. Testids used: lang-en/lang-ar/lang-ku, dialect-filter-ku-BAD, copy-btn-*. To force Kurdish reliably: localStorage.setItem('ds_lang','ku') then reload.",
+  "rca of the issue": "N/A — bug is fixed. Root cause of the earlier isolated-glyph rendering was that the previous font stack (Inter + Cairo/Tajawal fallback) did not fully support Kurdish-specific characters ۆ ێ ە, causing the browser to fall back to a non-shaping font for those codepoints. Switching to Vazirmatn (which has complete Arabic-script shaping including Kurdish extensions) resolved the connection issue globally."
+}

@@ -57,7 +57,7 @@ export default function Library() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
       {/* Header */}
       <div className="mb-8">
-        <span className={`text-xs font-mono uppercase tracking-[0.2em] ${accent.text}`}>
+        <span className={`text-xs uppercase ${accent.text}`}>
           {tf(cat.badge)}
         </span>
         <div className="flex flex-wrap items-end justify-between gap-4 mt-2">
