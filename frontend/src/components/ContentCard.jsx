@@ -24,15 +24,34 @@ export const ContentCard = ({ item, dialects }) => {
   return (
     <article
       data-testid={`content-card-${item.id}`}
-      className={`group relative flex flex-col rounded-2xl border border-ink-border bg-ink-card p-5 transition-all duration-300 hover:-translate-y-1 hover:border-opacity-60 ${accent.border} hover:shadow-[0_0_28px_-6px_var(--tw-shadow-color)]`}
+      className={`group relative flex flex-col rounded-2xl border border-ink-border bg-ink-card overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:border-opacity-60 ${accent.border} hover:shadow-[0_0_28px_-6px_var(--tw-shadow-color)]`}
       style={{ "--tw-shadow-color": accent.ring + "40" }}
     >
+      {item.preview_image_url && (
+        <div className="relative w-full h-48 overflow-hidden">
+          <img
+            src={item.preview_image_url}
+            alt={item.title}
+            loading="lazy"
+            data-testid={`content-image-${item.id}`}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-ink-card via-ink-card/20 to-transparent" />
+          {item.badge && (
+            <span className={`absolute top-3 right-3 rtl:right-auto rtl:left-3 text-[11px] px-2 py-1 rounded-md border backdrop-blur-md bg-[#0B0C10]/60 ${accent.border} ${accent.text}`}>
+              {item.badge}
+            </span>
+          )}
+        </div>
+      )}
+
+      <div className="flex flex-col flex-1 p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
           <h3 className="font-heading font-bold text-lg leading-snug truncate">{item.title_native}</h3>
           <p className="text-xs text-muted-foreground truncate">{item.title}</p>
         </div>
-        {item.badge && (
+        {item.badge && !item.preview_image_url && (
           <Badge className={`shrink-0 border ${accent.border} bg-transparent ${accent.text}`}>
             {item.badge}
           </Badge>
@@ -71,6 +90,7 @@ export const ContentCard = ({ item, dialects }) => {
         {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
         {copied ? t("copied") : t("copy")}
       </button>
+      </div>
     </article>
   );
 };

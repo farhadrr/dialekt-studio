@@ -40,6 +40,7 @@ class ContentItem(BaseModel):
     body: str
     tags: List[str] = []
     badge: Optional[str] = None
+    preview_image_url: Optional[str] = None
 
 
 class ContactCreate(BaseModel):

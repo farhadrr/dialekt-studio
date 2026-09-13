@@ -64,6 +64,32 @@ def test_content_all(client):
     assert "_id" not in item
 
 
+# --- Preview image URL feature ---
+def test_content_all_have_preview_image_url(client):
+    r = client.get(f"{API}/content")
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) > 0
+    missing = [x["id"] for x in data if not x.get("preview_image_url")]
+    assert not missing, f"Items missing preview_image_url: {missing}"
+    for x in data:
+        url = x["preview_image_url"]
+        assert isinstance(url, str)
+        assert url.startswith("https://"), f"Non-https url for {x['id']}: {url}"
+        assert "unsplash.com" in url, f"Non-unsplash url for {x['id']}: {url}"
+
+
+def test_ai_prompts_have_preview_image_url(client):
+    r = client.get(f"{API}/content", params={"category": "ai-prompts"})
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) > 0
+    for x in data:
+        assert x["category"] == "ai-prompts"
+        assert x.get("preview_image_url", "").startswith("https://")
+        assert "unsplash.com" in x["preview_image_url"]
+
+
 def test_content_filter_by_category(client):
     r = client.get(f"{API}/content", params={"category": "tiktok-scripts"})
     assert r.status_code == 200

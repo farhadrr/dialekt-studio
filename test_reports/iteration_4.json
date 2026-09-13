@@ -1,0 +1,21 @@
+{
+  "summary": "Preview image feature + full regression. Backend pytest 16/16 pass (2 new tests validate every /api/content and /api/content?category=ai-prompts item has an https Unsplash preview_image_url; existing 14 regression tests still pass: dialects=6 with ku-BAD only, ku-SOR filter → [], /api/generate works for 3 categories + ku-BAD, /api/contact submit + invalid-email 422). Frontend Playwright: on /library/ai-prompts (5 imgs), /library/tiktok-scripts (7 imgs), /library/content-ideas (4 imgs), and Home featured grid (6 imgs) every img[data-testid='content-image-{id}'] has complete=true and naturalWidth=800; DOM order confirms image is above pre/body inside the card, object-fit=cover, height=192px (h-48). Badge overlays image (absolute top-3). Regressions: copy button click → toast visible; dialect-filter-ku-BAD narrows tiktok-scripts from 7 → 2 (tk-ku-sor-1, tk-ku-bad-1); language switcher toggles dir/lang correctly (en→ltr, ar→rtl, ku→rtl). Kurdish/Arabic text still renders connected via Vazirmatn (verified in prior iteration, no regression observed).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ContentCard.jsx: image alt uses English item.title but card also displays title_native — consider using title_native for alt to improve a11y for RTL users, or a combined descriptive alt. Minor.",
+    "Preview images use loading='lazy' which is good, but no width/height attributes on <img> can cause CLS. Consider adding width/height or aspect-ratio styles beyond the wrapper's h-48."
+  ],
+  "updated_files": ["/app/backend/tests/test_backend.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "None. Backend re-seeds on startup.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Regression file /app/backend/tests/test_backend.py now has 16 tests (~24s incl 4 Gemini calls). New preview_image_url tests: test_content_all_have_preview_image_url, test_ai_prompts_have_preview_image_url. Image testid pattern: content-image-{id}; card wrapper testid: content-card-{id}; copy: copy-btn-{id}. All content items (16 total) currently have valid Unsplash preview_image_url.",
+  "rca of the issue": "N/A — new feature works as specified."
+}
