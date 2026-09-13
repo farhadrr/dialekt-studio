@@ -22,7 +22,7 @@ export default function Library() {
 
   useEffect(() => {
     api.get("/dialects").then((r) => setDialects(r.data)).catch(() => {});
-  }, []);
+  }, [api]);
 
   useEffect(() => {
     setLoading(true);
@@ -32,7 +32,7 @@ export default function Library() {
       .then((r) => setItems(r.data))
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
-  }, [cat.id]);
+  }, [api, cat.id]);
 
   const filtered = useMemo(
     () => (activeDialect === "all" ? items : items.filter((i) => i.dialect === activeDialect)),

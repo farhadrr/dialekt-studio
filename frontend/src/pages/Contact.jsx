@@ -21,7 +21,7 @@ export default function Contact() {
 
   useEffect(() => {
     api.get("/dialects").then((r) => setDialects(r.data)).catch(() => {});
-  }, []);
+  }, [api]);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e?.target ? e.target.value : e }));
 

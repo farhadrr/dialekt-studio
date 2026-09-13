@@ -23,7 +23,7 @@ export default function Home() {
   useEffect(() => {
     api.get("/dialects").then((r) => setDialects(r.data)).catch(() => {});
     api.get("/content").then((r) => setFeatured(r.data.slice(0, 6))).catch(() => {});
-  }, []);
+  }, [api]);
 
   return (
     <div>

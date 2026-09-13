@@ -155,6 +155,7 @@ async def get_content_item(item_id: str):
 async def generate(req: GenerateRequest):
     if req.category not in CATEGORIES:
         raise HTTPException(status_code=400, detail="Invalid category")
+    text = ""
     try:
         text = await run_llm(build_prompt(req))
     except Exception as e:
@@ -175,6 +176,7 @@ async def generate_prompt(req: PromptIdeaRequest):
         f"Include subject, setting, lighting, camera/lens, mood, and color palette, and end with technical "
         f"parameters like --ar 3:4 --style raw --v 6. Return ONLY the final prompt text, no explanation."
     )
+    text = ""
     try:
         text = await run_llm(prompt)
     except Exception as e:

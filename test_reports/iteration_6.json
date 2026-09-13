@@ -1,0 +1,17 @@
+{
+  "summary": "Regression testing after code-review fixes (backend: pre-init text=''; frontend: added `api` to useEffect deps in Home/Library/Contact). Backend: 20/20 pytest passed (dialects, content, preview_image_url, ai-prompts >=23, contact valid/invalid, generate 3 categories + ku-BAD + invalid, generate-prompt with/without dialect + empty). Frontend: Home, Library (all categories), Contact loaded correctly, prompt generator produced 814-char result, copy button works, contact form submitted successfully, language switcher toggles dir (en=ltr, ar/ku=rtl). CRITICAL CHECK: no infinite refetch loop — after each page load, waited 3s idle and observed 0 new /api calls on Home, Library, and Contact. Duplicated request pairs are React StrictMode dev-mode double-invocation, expected.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_backend.py", "/app/test_reports/pytest/pytest_results.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Adding `api` (a stable module-level axios instance) to useEffect deps is safe here — verified no re-fire. However lint-wise, since `api` is imported and never changes, `// eslint-disable-next-line react-hooks/exhaustive-deps` with an empty array would be equally valid; current approach is fine and passes.",
+    "server.py generate/generate_prompt now init text='' before try — dead-code technically (raise in except prevents reaching return with empty string) but harmless and satisfies linter."
+  ],
+  "updated_files": [],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "One TEST_ contact record created via UI (email test@example.com).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 6 verified code-review fixes with no regressions. All 20 backend tests pass; all frontend flows work with no infinite refetch (0 growth after 3s idle on Home/Library/Contact). Prompt generator, contact submit, language switch, RTL all functional."
+}
