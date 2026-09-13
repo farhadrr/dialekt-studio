@@ -22,14 +22,32 @@ def test_root(client):
 
 
 # --- Dialects ---
-def test_dialects_returns_seven(client):
+def test_dialects_returns_six_with_badini(client):
     r = client.get(f"{API}/dialects")
     assert r.status_code == 200
     data = r.json()
     assert isinstance(data, list)
-    assert len(data) == 7
+    assert len(data) == 6, f"Expected 6 dialects, got {len(data)}: {[d['code'] for d in data]}"
     codes = {d["code"] for d in data}
-    assert {"ar-EG", "ar-LEV", "ar-GULF", "ar-IRQ", "ar-MAG", "ku-SOR", "ku-BAD"}.issubset(codes)
+    assert codes == {"ar-EG", "ar-LEV", "ar-GULF", "ar-IRQ", "ar-MAG", "ku-BAD"}
+    assert "ku-SOR" not in codes
+    bad = next(d for d in data if d["code"] == "ku-BAD")
+    assert bad["name_en"] == "Badini Kurdish"
+    assert bad["name_native"] == "کوردی بادینی"
+
+
+def test_content_ku_sor_returns_empty(client):
+    r = client.get(f"{API}/content", params={"dialect": "ku-SOR"})
+    assert r.status_code == 200
+    assert r.json() == []
+
+
+def test_content_ku_bad_returns_items(client):
+    r = client.get(f"{API}/content", params={"dialect": "ku-BAD"})
+    assert r.status_code == 200
+    data = r.json()
+    assert len(data) > 0
+    assert all(x["dialect"] == "ku-BAD" for x in data)
 
 
 # --- Content ---
@@ -94,6 +112,15 @@ def test_generate_categories(client, category):
     data = r.json()
     assert "text" in data
     assert isinstance(data["text"], str)
+    assert len(data["text"].strip()) > 20
+
+
+def test_generate_kurdish_badini(client):
+    payload = {"category": "tiktok-scripts", "dialect": "ku-BAD", "topic": "mountains", "vibe": "inspirational"}
+    r = client.post(f"{API}/generate", json=payload, timeout=60)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    assert "text" in data
     assert len(data["text"].strip()) > 20
 
 

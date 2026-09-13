@@ -31,7 +31,7 @@ export const Header = () => {
           <span className="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-neon-cyan to-neon-pink">
             <Sparkles className="w-5 h-5 text-[#0B0C10]" />
           </span>
-          <span className="font-heading font-extrabold text-lg tracking-tight">
+          <span className="connected-text font-heading font-extrabold text-lg" style={{ letterSpacing: "0px", fontVariantLigatures: "normal", fontFeatureSettings: "'liga' 1, 'rlig' 1, 'dlig' 1" }}>
             {t("brand")}
           </span>
         </Link>

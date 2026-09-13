@@ -1,0 +1,20 @@
+{
+  "summary": "Bug-fix verification round. Backend: 14/14 pytest cases pass. New assertions confirm GET /api/dialects returns exactly 6 dialects with ku-BAD name_en='Badini Kurdish' and native 'کوردی بادینی'; ku-SOR is fully removed. GET /api/content?dialect=ku-SOR returns [] and GET /api/content?dialect=ku-BAD returns items. POST /api/generate works for ku-BAD and for all 3 categories in Arabic (regression). Frontend: header and footer both contain span.connected-text with computed letterSpacing 'normal' and font-feature-settings including liga/dlig/rlig → Arabic brand 'ديالكت ستوديو' and Kurdish 'دیالێکت ستۆدیۆ' render as visually connected (verified via zoom screenshot). Library dialect filter pills show exactly [all, ar-EG, ar-LEV, ar-GULF, ar-IRQ, ku-BAD] with 'کوردی بادینی'; no Sorani/ku-SOR text anywhere in Library HTML. Clicking ku-BAD pill loads 2 cards. Home page hero+ad-leaderboard+3 category cards render. Contact form submits successfully and its dialect Select contains no Sorani option.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_backend.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Seed IDs still use legacy 'ku-sor' prefix (tk-ku-sor-1, ci-ku-sor-1) even though the dialect is now ku-BAD. Purely cosmetic but consider renaming to tk-ku-bad-2 / ci-ku-bad-1 for consistency and to avoid confusion for future contributors.",
+    "connected-text computed letterSpacing resolves to 'normal' rather than the '!important 0px' declared. Both effectively render joined Arabic ligatures correctly, so no user-facing issue."
+  ],
+  "updated_files": ["/app/backend/tests/test_backend.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "Backend reseeds 17 items on startup (content collection cleared and reseeded). No additional seed created.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Backend regression file: /app/backend/tests/test_backend.py (14 tests, ~26s, 4 real Gemini calls). Dialect count is 6, only ku-BAD remains. Filter pill testids: [data-testid=dialect-filter-{code}]. Header/footer brand uses span.connected-text (visually joined Arabic glyphs). Contact form dialect Select verified to contain no Sorani option."
+}

@@ -6,8 +6,7 @@ DIALECTS = [
     {"code": "ar-GULF", "name_en": "Gulf / Saudi Arabic", "name_native": "الخليجية"},
     {"code": "ar-IRQ", "name_en": "Iraqi Arabic", "name_native": "العراقية"},
     {"code": "ar-MAG", "name_en": "Maghrebi Darija", "name_native": "الدارجة المغربية"},
-    {"code": "ku-SOR", "name_en": "Kurdish (Sorani)", "name_native": "کوردی سۆرانی"},
-    {"code": "ku-BAD", "name_en": "Kurdish (Kurmanji)", "name_native": "کوردی کورمانجی"},
+    {"code": "ku-BAD", "name_en": "Badini Kurdish", "name_native": "کوردی بادینی"},
 ]
 
 CATEGORIES = ["tiktok-scripts", "ai-prompts", "content-ideas"]
@@ -67,7 +66,7 @@ SEED_CONTENT = [
     {
         "id": "tk-ku-sor-1",
         "category": "tiktok-scripts",
-        "dialect": "ku-SOR",
+        "dialect": "ku-BAD",
         "title": "Daily Vlog Hook",
         "title_native": "سکریپتی ڤلۆگی ڕۆژانە",
         "badge": "Viral Ready",
@@ -108,7 +107,7 @@ SEED_CONTENT = [
     {
         "id": "ai-3",
         "category": "ai-prompts",
-        "dialect": "ku-SOR",
+        "dialect": "ku-BAD",
         "title": "Kurdish Mountain Heritage",
         "title_native": "میراتی چیای کوردی",
         "badge": "Midjourney & Flux",
@@ -159,7 +158,7 @@ SEED_CONTENT = [
     {
         "id": "ci-ku-sor-1",
         "category": "content-ideas",
-        "dialect": "ku-SOR",
+        "dialect": "ku-BAD",
         "title": "Educational Reel Ideas",
         "title_native": "بیرۆکەی ناوەڕۆکی فێرکاری",
         "badge": "Trending Concepts",

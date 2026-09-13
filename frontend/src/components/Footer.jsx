@@ -14,7 +14,7 @@ export const Footer = () => {
               <span className="grid place-items-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-cyan to-neon-pink">
                 <Sparkles className="w-4 h-4 text-[#0B0C10]" />
               </span>
-              <span className="font-heading font-extrabold text-lg">{t("brand")}</span>
+              <span className="connected-text font-heading font-extrabold text-lg" style={{ letterSpacing: "0px", fontVariantLigatures: "normal", fontFeatureSettings: "'liga' 1, 'rlig' 1, 'dlig' 1" }}>{t("brand")}</span>
             </div>
             <p className="text-sm text-muted-foreground">{t("footer_tag")}</p>
           </div>
