@@ -6,10 +6,9 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-export const PromptGenerator = ({ dialects = [] }) => {
+export const PromptGenerator = () => {
   const { t } = useLang();
   const [idea, setIdea] = useState("");
-  const [dialect, setDialect] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState("");
   const [copied, setCopied] = useState(false);
@@ -22,7 +21,7 @@ export const PromptGenerator = ({ dialects = [] }) => {
     setLoading(true);
     setResult("");
     try {
-      const { data } = await api.post("/generate-prompt", { idea, dialect: dialect || null });
+      const { data } = await api.post("/generate-prompt", { idea });
       setResult(data.text);
     } catch (e) {
       toast.error("Generation failed. Please try again.");
@@ -60,17 +59,6 @@ export const PromptGenerator = ({ dialects = [] }) => {
             placeholder={t("pg_ph")}
             className="flex-1 h-12 bg-ink-surface border-ink-border text-base"
           />
-          <select
-            data-testid="prompt-dialect-select"
-            value={dialect}
-            onChange={(e) => setDialect(e.target.value)}
-            className="h-12 rounded-md bg-ink-surface border border-ink-border px-3 text-sm text-foreground"
-          >
-            <option value="">{t("all_dialects")}</option>
-            {dialects.map((d) => (
-              <option key={d.code} value={d.code}>{d.name_native}</option>
-            ))}
-          </select>
           <Button
             data-testid="prompt-generate-btn"
             onClick={generate}
