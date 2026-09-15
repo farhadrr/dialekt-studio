@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Wand2, Copy, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLang } from "@/context/LanguageContext";
-import { api, CATEGORIES } from "@/lib/api";
+import { CATEGORIES } from "@/lib/api";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger,
 } from "@/components/ui/dialog";
@@ -15,11 +15,10 @@ import {
 
 const VIBES = ["viral", "funny", "emotional", "educational", "cinematic"];
 
-export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tiktok-scripts" }) => {
+export const GeneratorDialog = ({ trigger, defaultCategory = "tiktok-scripts" }) => {
   const { t, tf } = useLang();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState(defaultCategory);
-  const [dialect, setDialect] = useState("ar-EG");
   const [topic, setTopic] = useState("");
   const [vibe, setVibe] = useState("viral");
   const [loading, setLoading] = useState(false);
@@ -33,11 +32,28 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     }
     setLoading(true);
     setResult("");
+    
     try {
-      const { data } = await api.post("/generate", { category, dialect, topic, vibe });
-      setResult(data.text);
+      // دمج الخيارات لإرسالها للذكاء الاصطناعي في كلاودفلير
+      const combinedIdea = `القسم: ${category} - الموضوع: ${topic} - الطابع: ${vibe}`;
+      
+      const response = await fetch("https://dialekt-ai-proxy.farhad10180.workers.dev/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ idea: combinedIdea })
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        toast.error("حدث خطأ: " + data.error);
+      } else {
+        setResult(data.text);
+      }
     } catch (e) {
-      toast.error("Generation failed. Please try again.");
+      toast.error("فشل التوليد، يرجى المحاولة مرة أخرى.");
     } finally {
       setLoading(false);
     }
@@ -66,33 +82,18 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t("field_category")}</Label>
-              <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger data-testid="gen-category-select" className="bg-ink-surface border-ink-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CATEGORIES.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{tf(c.title)}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <Label>{t("field_dialect")}</Label>
-              <Select value={dialect} onValueChange={setDialect}>
-                <SelectTrigger data-testid="gen-dialect-select" className="bg-ink-surface border-ink-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {dialects.map((d) => (
-                    <SelectItem key={d.code} value={d.code}>{d.name_native}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="space-y-1.5">
+            <Label>{t("field_category")}</Label>
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger data-testid="gen-category-select" className="bg-ink-surface border-ink-border">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>{tf(c.title)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-1.5">
@@ -151,7 +152,7 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
                   {copied ? t("copied") : t("copy")}
                 </button>
               </div>
-              <pre dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+              <pre dir="auto" className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90 font-mono">
                 {result}
               </pre>
             </div>
