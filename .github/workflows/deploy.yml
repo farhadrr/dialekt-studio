@@ -30,6 +30,9 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: npm install --legacy-peer-deps
+      - name: Install missing packages
+        working-directory: ./frontend
+        run: npm install framer-motion lucide-react react-router-dom
       - name: Build
         working-directory: ./frontend
         run: npm run build
