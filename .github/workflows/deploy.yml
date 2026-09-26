@@ -32,7 +32,7 @@ jobs:
         run: npm install --legacy-peer-deps
       - name: Install missing packages
         working-directory: ./frontend
-        run: npm install framer-motion lucide-react react-router-dom --legacy-peer-deps
+        run: npm install framer-motion lucide-react react-router-dom ajv --legacy-peer-deps
       - name: Build
         working-directory: ./frontend
         run: CI=false npm run build
