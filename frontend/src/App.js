@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Home from "@/pages/Home";
 import Library from "@/pages/Library";
 import Contact from "@/pages/Contact";
+import Admin from "@/pages/Admin";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/library/:category" element={<Library />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/admin" element={<Admin />} />
             </Routes>
           </main>
           <Footer />
