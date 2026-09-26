@@ -106,7 +106,12 @@ export default function Home() {
         </div>
         <div className="grid grid-cols-12 gap-4">
           {CATEGORIES.map((cat, i) => {
-            const Icon = ICONS[cat.icon];
+            // التعديل هنا: فرض الأيقونة الصحيحة لكل قسم بناءً على المعرّف (id)
+            const Icon = 
+              cat.id === "tiktok-scripts" ? Clapperboard : 
+              cat.id === "ai-prompts" ? Sparkles : 
+              Lightbulb;
+            
             const accent = accentMap[cat.accent];
             const span =
               cat.id === "tiktok-scripts"
