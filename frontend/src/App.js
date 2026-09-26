@@ -1,5 +1,5 @@
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -13,7 +13,7 @@ function App() {
   return (
     <LanguageProvider>
       <div className="App min-h-screen flex flex-col bg-[#0B0C10]">
-        <BrowserRouter>
+        <HashRouter>
           <Header />
           <main className="flex-1">
             <Routes>
@@ -24,7 +24,7 @@ function App() {
             </Routes>
           </main>
           <Footer />
-        </BrowserRouter>
+        </HashRouter>
         <Toaster position="top-center" richColors />
       </div>
     </LanguageProvider>
