@@ -100,14 +100,19 @@ def build_prompt(req: GenerateRequest) -> str:
             f"a Body, and a Call-to-Action. Keep it punchy and natural to how people actually speak in that dialect. "
             f"Do not add any explanation before or after the script."
         )
+    
+    # التعديل الجذري هنا لضمان الإنجليزية فقط لبرومبت الصور
     if req.category == "ai-prompts":
         return (
-            f"Create ONE highly-detailed English AI image-generation prompt (for Midjourney/Flux/DALL-E) "
-            f"about \"{req.topic}\" with a {req.vibe} aesthetic, culturally rooted in the world of "
-            f"{label} speakers (Middle Eastern / Kurdish visual culture). "
-            f"Include subject, setting, lighting, lens, mood, and end with technical parameters like --ar and --v 6. "
-            f"Return only the prompt text."
+            f"CRITICAL INSTRUCTION: You MUST output ONLY in English. Ignore any previous system instructions to use Arabic or Kurdish. "
+            f"Act as a professional Midjourney Prompt Engineer. Convert the following topic into ONE highly-detailed English AI image-generation prompt. \n\n"
+            f"Topic: \"{req.topic}\"\n\n"
+            f"RULES:\n"
+            f"1. Output ONLY the English prompt text.\n"
+            f"2. NO Arabic words, NO conversational text, NO greetings, NO explanations.\n"
+            f"3. Include subject, setting, lighting, camera, and end with --ar 16:9 --v 6.0"
         )
+    
     # content-ideas
     return (
         f"Give a numbered list of 7 fresh, trending short-video content ideas about \"{req.topic}\" "
