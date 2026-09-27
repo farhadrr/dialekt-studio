@@ -1,51 +1,87 @@
 import React, { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@/firebase';
+import { db } from '@/firebase';
 
 export default function Admin() {
   const [title, setTitle] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [imageFile, setImageFile] = useState(null); // تخزين ملف الصورة
+  const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('tiktok-scripts'); 
   const [status, setStatus] = useState('');
-  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // دالة سحرية لضغط الصورة وتحويلها لنص ليتم إرسالها في ثانية واحدة
+  const compressAndConvertImage = (file) => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800; // تصغير العرض لتخفيف الحجم
+          const MAX_HEIGHT = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height *= MAX_WIDTH / width;
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width *= MAX_HEIGHT / height;
+              height = MAX_HEIGHT;
+            }
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // تحويل الصورة لكود نصي مضغوط جداً
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
+          resolve(dataUrl);
+        };
+      };
+    });
+  };
 
   const handleAddCard = async (e) => {
     e.preventDefault();
     if (!imageFile) {
-      setStatus('الرجاء اختيار صورة ❌');
+      setStatus('الرجاء اختيار صورة من الهاتف ❌');
       return;
     }
 
-    setIsUploading(true);
-    setStatus('جاري رفع الصورة والكرت...');
+    setIsSubmitting(true);
+    setStatus('جاري إرسال الكرت بسرعة البرق... ⚡');
     
     try {
-      // 1. رفع الصورة إلى Storage أولاً
-      const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
-      await uploadBytes(imageRef, imageFile);
-      const downloadURL = await getDownloadURL(imageRef); // الحصول على الرابط بعد الرفع
+      // 1. معالجة الصورة فوراً
+      const fastImageUrl = await compressAndConvertImage(imageFile);
 
-      // 2. حفظ بيانات الكرت مع رابط الصورة في Firestore
+      // 2. إرسال الكرت بالكامل لقاعدة البيانات (العنوان + النص + الصورة)
       await addDoc(collection(db, 'cards'), {
         title: title,
         prompt: prompt,
-        imageUrl: downloadURL, // الرابط الذي حصلنا عليه
+        imageUrl: fastImageUrl, // الصورة الآن محفوظة بشكل سريع جداً
         category: category, 
         createdAt: new Date()
       });
-
-      setStatus('تمت إضافة الكرت بنجاح! ✅');
+      
+      setStatus('تمت إضافة الكرت مع الصورة بنجاح وفي ثانية واحدة! ✅');
       setTitle('');
       setPrompt('');
-      setImageFile(null); // تفريغ حقل الصورة
-      document.getElementById('imageInput').value = ''; // إعادة تعيين الحقل
+      setImageFile(null);
+      document.getElementById('imageInput').value = '';
     } catch (error) {
       console.error('Error adding document: ', error);
-      setStatus('حدث خطأ، حاول مرة أخرى ❌');
+      setStatus('حدث خطأ، تأكد من اتصالك بالإنترنت ❌');
     } finally {
-      setIsUploading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -100,7 +136,7 @@ export default function Admin() {
             <input 
               type="file" 
               id="imageInput"
-              accept="image/*" // يقبل الصور فقط
+              accept="image/*"
               onChange={(e) => setImageFile(e.target.files[0])} 
               className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
               required 
@@ -109,10 +145,10 @@ export default function Admin() {
 
           <button 
             type="submit" 
-            disabled={isUploading}
-            className={`w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-opacity duration-200 ${isUploading ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90'}`}
+            disabled={isSubmitting}
+            className={`w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-opacity duration-200 ${isSubmitting ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90'}`}
           >
-            {isUploading ? 'جاري الرفع...' : 'إضافة الكرت'}
+            {isSubmitting ? 'جاري الإرسال...' : 'إضافة الكرت'}
           </button>
         </form>
         
