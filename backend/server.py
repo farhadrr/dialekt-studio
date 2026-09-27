@@ -7,7 +7,7 @@ import logging
 import uuid
 from pathlib import Path
 from pydantic import BaseModel, Field, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from datetime import datetime, timezone
 
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -90,46 +90,55 @@ def dialect_label(code: str) -> str:
     return code
 
 
-def build_prompt(req: GenerateRequest) -> str:
+def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
     label = dialect_label(req.dialect)
-    if req.category == "tiktok-scripts":
-        return (
+    
+    # حل المشكلة الجذري: إذا كان القسم يخص الصور، نلغي اللهجة العربية ونستخدم الإنجليزية فقط
+    if "prompt" in req.category.lower() or "image" in req.category.lower():
+        sys_msg = "You are a professional Midjourney Prompt Engineer. Output ONLY English. No conversational text."
+        prompt = (
+            f"Convert the following topic into ONE highly-detailed English AI image-generation prompt. \n\n"
+            f"Topic: \"{req.topic}\"\n\n"
+            f"RULES:\n"
+            f"1. Output ONLY the English prompt text.\n"
+            f"2. NO Arabic words, NO greetings, NO explanations.\n"
+            f"3. Include subject, setting, lighting, camera, and end with --ar 16:9 --v 6.0"
+        )
+        return prompt, sys_msg
+
+    if req.category == "tiktok-scripts" or "script" in req.category.lower():
+        sys_msg = None
+        prompt = (
             f"Write a short-form TikTok video script about \"{req.topic}\" with a {req.vibe} vibe. "
             f"Write the script entirely in {label} dialect (native script). "
             f"Structure it clearly with three labeled parts using emojis: a scroll-stopping Hook (first 3 seconds), "
             f"a Body, and a Call-to-Action. Keep it punchy and natural to how people actually speak in that dialect. "
             f"Do not add any explanation before or after the script."
         )
+        return prompt, sys_msg
     
-    # التعديل الجذري هنا لضمان الإنجليزية فقط لبرومبت الصور
-    if req.category == "ai-prompts":
-        return (
-            f"CRITICAL INSTRUCTION: You MUST output ONLY in English. Ignore any previous system instructions to use Arabic or Kurdish. "
-            f"Act as a professional Midjourney Prompt Engineer. Convert the following topic into ONE highly-detailed English AI image-generation prompt. \n\n"
-            f"Topic: \"{req.topic}\"\n\n"
-            f"RULES:\n"
-            f"1. Output ONLY the English prompt text.\n"
-            f"2. NO Arabic words, NO conversational text, NO greetings, NO explanations.\n"
-            f"3. Include subject, setting, lighting, camera, and end with --ar 16:9 --v 6.0"
-        )
-    
-    # content-ideas
-    return (
+    # الافتراضي: أفكار المحتوى
+    sys_msg = None
+    prompt = (
         f"Give a numbered list of 7 fresh, trending short-video content ideas about \"{req.topic}\" "
         f"for a creator, with a {req.vibe} vibe. Write the ideas entirely in {label} dialect (native script). "
         f"Keep each idea to one short line. Return only the list."
     )
+    return prompt, sys_msg
 
 
-async def run_llm(prompt: str) -> str:
+async def run_llm(prompt: str, custom_system: Optional[str] = None) -> str:
+    # استخدام رسالة نظام مخصصة للصور (إنجليزية)، أو الافتراضية للمحتوى (عربية/كردية)
+    sys_msg = custom_system if custom_system else (
+        "You are an expert TikTok content strategist and AI prompt engineer, "
+        "fluent in all Arabic dialects and Kurdish (Sorani & Kurmanji). "
+        "You write authentic, culturally accurate content that sounds native."
+    )
+    
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
         session_id=str(uuid.uuid4()),
-        system_message=(
-            "You are an expert TikTok content strategist and AI prompt engineer, "
-            "fluent in all Arabic dialects and Kurdish (Sorani & Kurmanji). "
-            "You write authentic, culturally accurate content that sounds native."
-        ),
+        system_message=sys_msg,
     ).with_model("gemini", "gemini-3-flash-preview")
 
     result = ""
@@ -178,7 +187,9 @@ async def generate(request: Request, req: GenerateRequest):
         raise HTTPException(status_code=400, detail="Invalid category")
     text = ""
     try:
-        text = await run_llm(build_prompt(req))
+        # فصل الـ prompt عن تعليمات النظام لإرسالها بشكل صحيح
+        prompt_text, sys_msg = build_prompt(req)
+        text = await run_llm(prompt_text, custom_system=sys_msg)
     except Exception:
         logger.exception("Generation failed")
         raise HTTPException(status_code=500, detail="Generation failed. Please try again.")
@@ -191,9 +202,9 @@ async def generate_prompt(request: Request, req: PromptIdeaRequest):
     if not req.idea.strip():
         raise HTTPException(status_code=400, detail="Idea is required")
     
+    sys_msg = "You are a professional Midjourney Prompt Engineer. Output ONLY English. No conversational text."
     prompt = (
-        f"CRITICAL INSTRUCTION: You MUST output ONLY in English. Ignore any previous system instructions to use Arabic or Kurdish. "
-        f"Act as a professional Midjourney Prompt Engineer. Convert the following user idea into ONE highly-detailed English AI image-generation prompt. \n\n"
+        f"Convert the following user idea into ONE highly-detailed English AI image-generation prompt. \n\n"
         f"User Idea: \"{req.idea}\"\n\n"
         f"RULES:\n"
         f"1. Output ONLY the English prompt text.\n"
@@ -203,7 +214,7 @@ async def generate_prompt(request: Request, req: PromptIdeaRequest):
     
     text = ""
     try:
-        text = await run_llm(prompt)
+        text = await run_llm(prompt, custom_system=sys_msg)
     except Exception:
         logger.exception("Prompt generation failed")
         raise HTTPException(status_code=500, detail="Generation failed. Please try again.")
