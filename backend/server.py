@@ -185,14 +185,17 @@ async def generate(request: Request, req: GenerateRequest):
 async def generate_prompt(request: Request, req: PromptIdeaRequest):
     if not req.idea.strip():
         raise HTTPException(status_code=400, detail="Idea is required")
-    culture = dialect_label(req.dialect) if req.dialect else "Middle Eastern / Kurdish"
+    
     prompt = (
-        f"Turn this short idea into ONE professional, highly-detailed English AI image-generation prompt "
-        f"suitable for Midjourney, Flux or DALL-E. Idea: \"{req.idea}\". "
-        f"Where relevant, root the visuals in {culture} culture and aesthetics. "
-        f"Include subject, setting, lighting, camera/lens, mood, and color palette, and end with technical "
-        f"parameters like --ar 3:4 --style raw --v 6. Return ONLY the final prompt text, no explanation."
+        f"CRITICAL INSTRUCTION: You MUST output ONLY in English. Ignore any previous system instructions to use Arabic or Kurdish. "
+        f"Act as a professional Midjourney Prompt Engineer. Convert the following user idea into ONE highly-detailed English AI image-generation prompt. \n\n"
+        f"User Idea: \"{req.idea}\"\n\n"
+        f"RULES:\n"
+        f"1. Output ONLY the English prompt text.\n"
+        f"2. NO Arabic words, NO conversational text, NO greetings, NO explanations.\n"
+        f"3. Include subject, setting, lighting, camera, and end with --ar 16:9 --v 6.0"
     )
+    
     text = ""
     try:
         text = await run_llm(prompt)
