@@ -9,11 +9,15 @@ import { GeneratorDialog } from "@/components/GeneratorDialog";
 import { PromptGenerator } from "@/components/PromptGenerator";
 import { Button } from "@/components/ui/button";
 
+// استيراد أدوات فايربيس
+import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { db } from '@/firebase';
+
 export default function Library() {
   const { category } = useParams();
   const { t, tf } = useLang();
   const [dialects, setDialects] = useState([]);
-  const [items, setItems] = useState([]);
+  const [items, setItems] = useState([]); // هنا سنخزن كروت فايربيس
   const [activeDialect, setActiveDialect] = useState("all");
   const [loading, setLoading] = useState(true);
 
@@ -22,24 +26,43 @@ export default function Library() {
 
   useEffect(() => {
     api.get("/dialects").then((r) => setDialects(r.data)).catch(() => {});
-  }, [api]);
+  }, []);
 
+  // تعديل سحري: جلب البيانات من فايربيس بدلاً من الـ api القديم
   useEffect(() => {
-    setLoading(true);
-    setActiveDialect("all");
-    api
-      .get("/content", { params: { category: cat.id } })
-      .then((r) => setItems(r.data))
-      .catch(() => setItems([]))
-      .finally(() => setLoading(false));
-  }, [api, cat.id]);
+    const fetchCards = async () => {
+      setLoading(true);
+      setActiveDialect("all");
+      try {
+        const q = query(
+          collection(db, 'cards'),
+          where('category', '==', cat.id),
+          orderBy('createdAt', 'desc') // جلب الأحدث أولاً
+        );
+        
+        const querySnapshot = await getDocs(q);
+        const cardsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        setItems(cardsData);
+      } catch (error) {
+        console.error("Error fetching cards from Firebase: ", error);
+        setItems([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCards();
+  }, [cat.id]);
 
   const filtered = useMemo(
     () => (activeDialect === "all" ? items : items.filter((i) => i.dialect === activeDialect)),
     [items, activeDialect]
   );
 
-  // Insert an in-feed ad after every 6 cards
   const withAds = [];
   filtered.forEach((item, idx) => {
     withAds.push(<ContentCard key={item.id} item={item} dialects={dialects} />);
@@ -83,10 +106,8 @@ export default function Library() {
         </div>
       </div>
 
-      {/* Dynamic prompt generator (AI Prompts only) */}
       {cat.id === "ai-prompts" && <PromptGenerator dialects={dialects} />}
 
-      {/* Dialect filter pills */}
       <div className="flex flex-wrap gap-2 mb-8">
         <button
           data-testid="dialect-filter-all"
@@ -115,7 +136,6 @@ export default function Library() {
         ))}
       </div>
 
-      {/* Content + sidebar */}
       <div className="grid lg:grid-cols-[1fr_320px] gap-6">
         <div>
           {loading ? (
@@ -129,7 +149,6 @@ export default function Library() {
           )}
         </div>
 
-        {/* Sticky sidebar ad */}
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-4">
             <AdBanner variant="rectangle" />
