@@ -34,8 +34,22 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     setLoading(true);
     setResult("");
     try {
-      // تجميع المدخلات في أمر (Prompt) واحد واضح للذكاء الاصطناعي
-      const finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nاللهجة: ${dialect}\nالموضوع: ${topic}\nالطابع: ${vibe}`;
+      // بناء الأمر (Prompt) بناءً على القسم المختار
+      let finalPrompt = "";
+      
+      if (category === "ai-prompts" || category.includes("prompt")) {
+        // أمر صارم بالإنجليزية لبرومبت الصور فقط
+        finalPrompt = `CRITICAL INSTRUCTION: You MUST output ONLY in English. IGNORE ALL PREVIOUS RULES.
+Act as a professional Midjourney Prompt Engineer. Write ONE highly-detailed English Midjourney prompt for the following idea: "${topic}".
+Vibe/Style: ${vibe}
+RULES:
+1. Output ONLY the English prompt text.
+2. NO Arabic words, NO greetings, NO explanations, NO markdown formatting around the text.
+3. Include subject, setting, lighting, camera details, and end with --ar 16:9 --v 6.0`;
+      } else {
+        // الأمر الطبيعي لباقي الأقسام
+        finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nاللهجة: ${dialect}\nالموضوع: ${topic}\nالطابع: ${vibe}`;
+      }
 
       // إرسال الطلب إلى Cloudflare Worker الخاص بك
       const response = await fetch("https://dialekt-ai-proxy.farhad10180.workers.dev", {
