@@ -23,6 +23,9 @@ export const ContentCard = ({ item, dialects }) => {
   const text = String(item.prompt || item.desc || "");
   const imageUrl = String(item.imageUrl || item.image || "");
   const subtitle = item.subtitle ? String(t(item.subtitle)) : ""; 
+  
+  // المتغير الذي يسحب اختيار الإطار من لوحة التحكم
+  const imagePos = item.imagePosition || "object-center";
 
   let safeTags = ["عام"];
   if (Array.isArray(item.tags)) {
@@ -52,8 +55,8 @@ export const ContentCard = ({ item, dialects }) => {
           <img 
             src={imageUrl} 
             alt={String(displayTitle)} 
-            // الحل هنا: cover تملأ المكان، و top تحمي الوجه من القص
-            className="w-full h-full object-cover object-top"
+            // دمجنا object-cover مع اختيارك (imagePos)
+            className={`w-full h-full object-cover ${imagePos}`}
             onError={(e) => e.target.style.display='none'} 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F232B] to-transparent"></div>
