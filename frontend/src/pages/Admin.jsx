@@ -11,11 +11,6 @@ export default function Admin() {
   const [category, setCategory] = useState('tiktok-scripts'); 
   const [imagePosition, setImagePosition] = useState('object-center'); 
   
-  // متغيرات الذكاء الاصطناعي
-  const [aiIdea, setAiIdea] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [aiError, setAiError] = useState('');
-  
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cards, setCards] = useState([]);
@@ -62,51 +57,6 @@ export default function Admin() {
         };
       };
     });
-  };
-
-  // الدالة التي تتصل بـ Cloudflare الخاص بك بأمان تام
-  const generateAIPrompt = async () => {
-    if (!aiIdea) {
-      setAiError('الرجاء إدخال فكرة أولاً');
-      return;
-    }
-    
-    setIsGenerating(true);
-    setAiError('');
-    
-    try {
-      // تم وضع رابط Cloudflare Worker الخاص بك هنا
-      const workerUrl = "https://dialekt-ai-proxy.farhad10180.workers.dev"; 
-      
-      const response = await fetch(workerUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          idea: aiIdea,
-          category: category 
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('فشل الاتصال بـ Cloudflare');
-      }
-
-      const data = await response.json();
-      
-      if (data.prompt) setPrompt(data.prompt);
-      if (data.titleAr) setTitleAr(data.titleAr);
-      if (data.titleEn) setTitleEn(data.titleEn);
-      if (data.titleKu) setTitleKu(data.titleKu);
-      
-      setAiIdea(''); 
-    } catch (error) {
-      console.error("Cloudflare Connection Error:", error);
-      setAiError('حدث خطأ أثناء الاتصال بالخادم. تأكد من صحة رابط Cloudflare الخاص بك.');
-    } finally {
-      setIsGenerating(false);
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -200,31 +150,6 @@ export default function Admin() {
         <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
           {editingId ? 'تعديل الكرت ✏️' : 'لوحة تحكم الاستوديو'}
         </h2>
-        
-        {/* قسم توليد الذكاء الاصطناعي المربوط بـ Cloudflare الخاص بك */}
-        <div className="mb-8 p-6 bg-gradient-to-r from-[#1A1A2E] to-[#16213E] rounded-2xl border border-[#0F3460] shadow-lg">
-          <h3 className="text-xl font-bold mb-4 text-cyan-400 flex items-center gap-2">
-            ✨ أنشئ البرومبت (عبر Cloudflare)
-          </h3>
-          <div className="space-y-4">
-            <input 
-              type="text" 
-              value={aiIdea} 
-              onChange={(e) => setAiIdea(e.target.value)} 
-              className="w-full p-3 bg-[#0F3460] border border-gray-700 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500" 
-              placeholder="اكتب فكرتك هنا..." 
-            />
-            {aiError && <p className="text-red-400 text-sm">{aiError}</p>}
-            <button 
-              type="button" 
-              onClick={generateAIPrompt} 
-              disabled={isGenerating}
-              className="w-full bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-600 hover:to-violet-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-[0_0_15px_rgba(236,72,153,0.3)] disabled:opacity-50"
-            >
-              {isGenerating ? 'جاري العصف الذهني... 🧠' : 'أنشئ البرومبت 🪄'}
-            </button>
-          </div>
-        </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           
