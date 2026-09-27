@@ -1,14 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams } from "react-router-dom";
-import { Wand2 } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
 import { api, CATEGORIES, accentMap } from "@/lib/api";
 import { ContentCard } from "@/components/ContentCard";
 import { AdBanner } from "@/components/AdBanner";
-import { GeneratorDialog } from "@/components/GeneratorDialog";
-import { PromptGenerator } from "@/components/PromptGenerator";
-import { Button } from "@/components/ui/button";
-
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase';
 
@@ -32,7 +27,6 @@ export default function Library() {
       setLoading(true);
       setActiveDialect("all");
       try {
-        // جلب جميع الكروت من القاعدة مباشرة
         const querySnapshot = await getDocs(collection(db, 'cards'));
         
         const allCards = querySnapshot.docs.map(doc => {
@@ -40,21 +34,17 @@ export default function Library() {
           return {
             id: doc.id,
             title: data.title || 'بدون عنوان',
-            // هنا السحر: تغيير الأسماء لتطابق تصميم ContentCard في موقعك
             desc: data.prompt || '',  
             prompt: data.prompt || '',
             image: data.imageUrl || '', 
             category: data.category,
-            // وضع لهجة افتراضية حتى لا تختفي الكروت بسبب الفلتر
             dialect: data.dialect || 'sorani', 
             createdAt: data.createdAt
           };
         });
 
-        // اختيار كروت هذا القسم فقط
         const categoryCards = allCards.filter(c => c.category === cat.id);
 
-        // ترتيب الكروت من الأحدث للأقدم
         categoryCards.sort((a, b) => {
           const timeA = a.createdAt?.seconds || 0;
           const timeB = b.createdAt?.seconds || 0;
@@ -105,22 +95,8 @@ export default function Library() {
             </h1>
             <p className="text-muted-foreground mt-3 max-w-2xl">{tf(cat.desc)}</p>
           </div>
-          <GeneratorDialog
-            dialects={dialects}
-            defaultCategory={cat.id}
-            trigger={
-              <Button
-                data-testid="library-generate-btn"
-                className="h-11 px-5 rounded-xl bg-gradient-to-r from-neon-cyan to-neon-pink text-[#0B0C10] font-bold hover:opacity-90"
-              >
-                <Wand2 className="w-4 h-4" /> {t("hero_cta2")}
-              </Button>
-            }
-          />
         </div>
       </div>
-
-      {cat.id === "ai-prompts" && <PromptGenerator dialects={dialects} />}
 
       <div className="flex flex-wrap gap-2 mb-8">
         <button
@@ -166,25 +142,6 @@ export default function Library() {
         <aside className="hidden lg:block">
           <div className="sticky top-24 space-y-4">
             <AdBanner variant="rectangle" />
-            <div className="rounded-2xl border border-ink-border bg-ink-card p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <Wand2 className="w-5 h-5 text-neon-cyan" />
-                <h3 className="font-heading font-bold">{t("generate_title")}</h3>
-              </div>
-              <p className="text-sm text-muted-foreground mb-4">{t("generate_desc")}</p>
-              <GeneratorDialog
-                dialects={dialects}
-                defaultCategory={cat.id}
-                trigger={
-                  <Button
-                    data-testid="sidebar-generate-btn"
-                    className="w-full rounded-xl bg-gradient-to-r from-neon-cyan to-neon-pink text-[#0B0C10] font-bold hover:opacity-90"
-                  >
-                    <Wand2 className="w-4 h-4" /> {t("btn_generate")}
-                  </Button>
-                }
-              />
-            </div>
           </div>
         </aside>
       </div>
