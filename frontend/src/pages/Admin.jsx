@@ -1,32 +1,51 @@
 import React, { useState } from 'react';
 import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, storage } from '@/firebase';
 
 export default function Admin() {
   const [title, setTitle] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [imageUrl, setImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState(null); // تخزين ملف الصورة
   const [category, setCategory] = useState('tiktok-scripts'); 
   const [status, setStatus] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleAddCard = async (e) => {
     e.preventDefault();
-    setStatus('جاري الإضافة...');
+    if (!imageFile) {
+      setStatus('الرجاء اختيار صورة ❌');
+      return;
+    }
+
+    setIsUploading(true);
+    setStatus('جاري رفع الصورة والكرت...');
+    
     try {
+      // 1. رفع الصورة إلى Storage أولاً
+      const imageRef = ref(storage, `images/${Date.now()}_${imageFile.name}`);
+      await uploadBytes(imageRef, imageFile);
+      const downloadURL = await getDownloadURL(imageRef); // الحصول على الرابط بعد الرفع
+
+      // 2. حفظ بيانات الكرت مع رابط الصورة في Firestore
       await addDoc(collection(db, 'cards'), {
         title: title,
         prompt: prompt,
-        imageUrl: imageUrl,
+        imageUrl: downloadURL, // الرابط الذي حصلنا عليه
         category: category, 
         createdAt: new Date()
       });
+
       setStatus('تمت إضافة الكرت بنجاح! ✅');
       setTitle('');
       setPrompt('');
-      setImageUrl('');
+      setImageFile(null); // تفريغ حقل الصورة
+      document.getElementById('imageInput').value = ''; // إعادة تعيين الحقل
     } catch (error) {
       console.error('Error adding document: ', error);
       setStatus('حدث خطأ، حاول مرة أخرى ❌');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -77,27 +96,28 @@ export default function Admin() {
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2 font-medium">رابط الصورة</label>
+            <label className="block text-gray-300 mb-2 font-medium">اختر صورة من الهاتف</label>
             <input 
-              type="url" 
-              value={imageUrl} 
-              onChange={(e) => setImageUrl(e.target.value)} 
-              className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white placeholder-gray-500"
-              placeholder="https://..."
+              type="file" 
+              id="imageInput"
+              accept="image/*" // يقبل الصور فقط
+              onChange={(e) => setImageFile(e.target.files[0])} 
+              className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
               required 
             />
           </div>
 
           <button 
             type="submit" 
-            className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 px-4 rounded-xl hover:opacity-90 transition-opacity duration-200 shadow-lg"
+            disabled={isUploading}
+            className={`w-full text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-opacity duration-200 ${isUploading ? 'bg-gray-600 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:opacity-90'}`}
           >
-            إضافة الكرت
+            {isUploading ? 'جاري الرفع...' : 'إضافة الكرت'}
           </button>
         </form>
         
         {status && (
-          <div className={`mt-6 p-4 rounded-xl text-center font-bold ${status.includes('بنجاح') ? 'bg-green-900/50 text-green-400 border border-green-800' : 'bg-red-900/50 text-red-400 border border-red-800'}`}>
+          <div className={`mt-6 p-4 rounded-xl text-center font-bold ${status.includes('بنجاح') ? 'bg-green-900/50 text-green-400 border border-green-800' : status.includes('جاري') ? 'bg-yellow-900/50 text-yellow-400 border border-yellow-800' : 'bg-red-900/50 text-red-400 border border-red-800'}`}>
             {status}
           </div>
         )}
