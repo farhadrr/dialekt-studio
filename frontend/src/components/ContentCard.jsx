@@ -24,7 +24,6 @@ export const ContentCard = ({ item, dialects }) => {
   const imageUrl = String(item.imageUrl || item.image || "");
   const subtitle = item.subtitle ? String(t(item.subtitle)) : ""; 
   
-  // المتغير الذي يسحب اختيار الإطار من لوحة التحكم
   const imagePos = item.imagePosition || "object-center";
 
   let safeTags = ["عام"];
@@ -46,16 +45,16 @@ export const ContentCard = ({ item, dialects }) => {
 
   return (
     <div 
-      className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col relative w-full"
-      style={{ aspectRatio: '1 / 1' }} 
+      // 1. كبرنا الكرت بالكامل (أصبح طوله 520 بكسل للهاتف و 580 بكسل للكمبيوتر)
+      className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col relative w-full h-[520px] sm:h-[580px]"
     >
       
       {imageUrl && (
-        <div className="w-full h-[40%] shrink-0 overflow-hidden relative">
+        // 2. أعطينا كل المساحة الإضافية للصورة (أصبح طولها 280 بكسل للهاتف، ستظهر بشكل كامل وواضح جداً)
+        <div className="w-full h-[280px] sm:h-[320px] shrink-0 overflow-hidden relative">
           <img 
             src={imageUrl} 
             alt={String(displayTitle)} 
-            // دمجنا object-cover مع اختيارك (imagePos)
             className={`w-full h-full object-cover ${imagePos}`}
             onError={(e) => e.target.style.display='none'} 
           />
@@ -63,21 +62,22 @@ export const ContentCard = ({ item, dialects }) => {
         </div>
       )}
       
-      <div className="p-3 sm:p-4 flex flex-col flex-grow relative z-10 -mt-6 min-h-0">
+      <div className="p-4 sm:p-5 flex flex-col flex-grow relative z-10 -mt-8 min-h-0">
         
-        <div className={`mb-1.5 shrink-0 ${activeLang === 'en' ? 'text-left' : 'text-right'}`}>
-          <h3 className="text-base sm:text-lg font-bold text-white mb-0.5 truncate">{String(displayTitle)}</h3>
-          {subtitle && <p className="text-[10px] sm:text-xs text-gray-400 mb-0.5 truncate">{subtitle}</p>}
+        <div className={`mb-2 shrink-0 ${activeLang === 'en' ? 'text-left' : 'text-right'}`}>
+          <h3 className="text-lg font-bold text-white mb-1 truncate">{String(displayTitle)}</h3>
+          {subtitle && <p className="text-xs text-gray-400 mb-1 truncate">{subtitle}</p>}
           
-          <div className={`flex flex-wrap gap-1 overflow-hidden h-4 ${activeLang === 'en' ? 'justify-start' : 'justify-end'}`}>
+          <div className={`flex flex-wrap gap-1 mt-1 overflow-hidden h-5 ${activeLang === 'en' ? 'justify-start' : 'justify-end'}`}>
             {safeTags.map((tag, i) => (
-              <span key={i} className="text-[9px] text-gray-400">#{String(tag)}</span>
+              <span key={i} className="text-[10px] text-gray-400">#{String(tag)}</span>
             ))}
           </div>
         </div>
         
+        {/* 3. النص بقي كما هو تماماً (7 أسطر فقط دون أي تغيير) */}
         <div 
-          className="text-gray-300 text-[10px] sm:text-[11px] flex-grow leading-snug font-mono overflow-hidden mb-2" 
+          className="text-gray-300 text-xs sm:text-sm flex-grow leading-relaxed font-mono overflow-hidden mb-4" 
           dir="ltr"
           style={{
             display: '-webkit-box',
@@ -92,7 +92,7 @@ export const ContentCard = ({ item, dialects }) => {
         <button 
           onClick={handleCopy}
           disabled={copied}
-          className={`mt-auto shrink-0 w-full py-1.5 sm:py-2 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border text-xs sm:text-sm ${
+          className={`mt-auto shrink-0 w-full py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border text-sm ${
             copied 
               ? 'bg-[#1a202c] border-green-500/50 text-green-400' 
               : 'bg-[#15181e] hover:bg-[#1a202c] text-gray-300 border-[#2D3340]' 
@@ -101,12 +101,12 @@ export const ContentCard = ({ item, dialects }) => {
           {copied ? (
             <>
               <span>{t("copied") || "تم النسخ"}</span>
-              <Check className="w-3 h-3 sm:w-4 sm:h-4 text-green-400" />
+              <Check className="w-4 h-4 text-green-400" />
             </>
           ) : (
             <>
               <span>{t("copy") || "نسخ"}</span>
-              <Copy className="w-3 h-3 sm:w-4 sm:h-4" />
+              <Copy className="w-4 h-4" />
             </>
           )}
         </button>
