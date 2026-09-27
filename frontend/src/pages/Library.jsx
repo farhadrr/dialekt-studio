@@ -9,14 +9,14 @@ import { GeneratorDialog } from "@/components/GeneratorDialog";
 import { PromptGenerator } from "@/components/PromptGenerator";
 import { Button } from "@/components/ui/button";
 
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 export default function Library() {
   const { category } = useParams();
   const { t, tf } = useLang();
   const [dialects, setDialects] = useState([]);
-  const [items, setItems] = useState([]); 
+  const [items, setItems] = useState([]);
   const [activeDialect, setActiveDialect] = useState("all");
   const [loading, setLoading] = useState(true);
 
@@ -32,28 +32,38 @@ export default function Library() {
       setLoading(true);
       setActiveDialect("all");
       try {
-        // جلب البيانات بدون orderBy لتجنب مشكلة الفهرسة في فايربيس
-        const q = query(
-          collection(db, 'cards'),
-          where('category', '==', cat.id)
-        );
+        // جلب جميع الكروت من القاعدة مباشرة
+        const querySnapshot = await getDocs(collection(db, 'cards'));
         
-        const querySnapshot = await getDocs(q);
-        const cardsData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const allCards = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            title: data.title || 'بدون عنوان',
+            // هنا السحر: تغيير الأسماء لتطابق تصميم ContentCard في موقعك
+            desc: data.prompt || '',  
+            prompt: data.prompt || '',
+            image: data.imageUrl || '', 
+            category: data.category,
+            // وضع لهجة افتراضية حتى لا تختفي الكروت بسبب الفلتر
+            dialect: data.dialect || 'sorani', 
+            createdAt: data.createdAt
+          };
+        });
 
-        // ترتيب الكروت برمجياً من الأحدث للأقدم
-        cardsData.sort((a, b) => {
+        // اختيار كروت هذا القسم فقط
+        const categoryCards = allCards.filter(c => c.category === cat.id);
+
+        // ترتيب الكروت من الأحدث للأقدم
+        categoryCards.sort((a, b) => {
           const timeA = a.createdAt?.seconds || 0;
           const timeB = b.createdAt?.seconds || 0;
           return timeB - timeA;
         });
         
-        setItems(cardsData);
+        setItems(categoryCards);
       } catch (error) {
-        console.error("Error fetching cards from Firebase: ", error);
+        console.error("Error fetching:", error);
         setItems([]);
       } finally {
         setLoading(false);
