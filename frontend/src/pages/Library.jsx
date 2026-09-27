@@ -9,15 +9,14 @@ import { GeneratorDialog } from "@/components/GeneratorDialog";
 import { PromptGenerator } from "@/components/PromptGenerator";
 import { Button } from "@/components/ui/button";
 
-// استيراد أدوات فايربيس
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 export default function Library() {
   const { category } = useParams();
   const { t, tf } = useLang();
   const [dialects, setDialects] = useState([]);
-  const [items, setItems] = useState([]); // هنا سنخزن كروت فايربيس
+  const [items, setItems] = useState([]); 
   const [activeDialect, setActiveDialect] = useState("all");
   const [loading, setLoading] = useState(true);
 
@@ -28,16 +27,15 @@ export default function Library() {
     api.get("/dialects").then((r) => setDialects(r.data)).catch(() => {});
   }, []);
 
-  // تعديل سحري: جلب البيانات من فايربيس بدلاً من الـ api القديم
   useEffect(() => {
     const fetchCards = async () => {
       setLoading(true);
       setActiveDialect("all");
       try {
+        // جلب البيانات بدون orderBy لتجنب مشكلة الفهرسة في فايربيس
         const q = query(
           collection(db, 'cards'),
-          where('category', '==', cat.id),
-          orderBy('createdAt', 'desc') // جلب الأحدث أولاً
+          where('category', '==', cat.id)
         );
         
         const querySnapshot = await getDocs(q);
@@ -45,6 +43,13 @@ export default function Library() {
           id: doc.id,
           ...doc.data()
         }));
+
+        // ترتيب الكروت برمجياً من الأحدث للأقدم
+        cardsData.sort((a, b) => {
+          const timeA = a.createdAt?.seconds || 0;
+          const timeB = b.createdAt?.seconds || 0;
+          return timeB - timeA;
+        });
         
         setItems(cardsData);
       } catch (error) {
@@ -79,7 +84,6 @@ export default function Library() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
-      {/* Header */}
       <div className="mb-8">
         <span className={`text-xs uppercase ${accent.text}`}>
           {tf(cat.badge)}
