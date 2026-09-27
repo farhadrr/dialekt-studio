@@ -1,28 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { Copy, Check } from "lucide-react"; 
 import { useLang } from "@/context/LanguageContext";
 
 export const ContentCard = ({ item, dialects }) => {
   const [copied, setCopied] = useState(false);
-  const [containerHeight, setContainerHeight] = useState('auto');
-  const containerRef = useRef(null);
   
   const langContext = useLang() || {};
   const t = langContext.t || ((k) => k);
   const activeLang = langContext.lang || langContext.language || langContext.locale || "ar";
-
-  useEffect(() => {
-    if (containerRef.current) {
-      setContainerHeight(`${containerRef.current.offsetWidth}px`);
-    }
-    const handleResize = () => {
-      if (containerRef.current) {
-        setContainerHeight(`${containerRef.current.offsetWidth}px`);
-      }
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
 
   if (!item) return null;
 
@@ -58,24 +43,24 @@ export const ContentCard = ({ item, dialects }) => {
 
   return (
     <div 
-      ref={containerRef}
       className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col relative w-full"
-      style={{ height: containerHeight }} 
+      style={{ aspectRatio: '1 / 1' }} 
     >
       
       {imageUrl && (
-        <div className="w-full h-[60%] shrink-0 overflow-hidden relative bg-[#15181e]">
+        <div className="w-full h-[40%] shrink-0 overflow-hidden relative">
           <img 
             src={imageUrl} 
             alt={String(displayTitle)} 
-            className="w-full h-full object-contain"
+            // الحل هنا: cover تملأ المكان، و top تحمي الوجه من القص
+            className="w-full h-full object-cover object-top"
             onError={(e) => e.target.style.display='none'} 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F232B] to-transparent"></div>
         </div>
       )}
       
-      <div className="p-3 sm:p-4 flex flex-col flex-grow relative z-10 -mt-10 min-h-0 bg-[#1F232B]">
+      <div className="p-3 sm:p-4 flex flex-col flex-grow relative z-10 -mt-6 min-h-0">
         
         <div className={`mb-1.5 shrink-0 ${activeLang === 'en' ? 'text-left' : 'text-right'}`}>
           <h3 className="text-base sm:text-lg font-bold text-white mb-0.5 truncate">{String(displayTitle)}</h3>
