@@ -5,14 +5,12 @@ import { useLang } from "@/context/LanguageContext";
 export const ContentCard = ({ item, dialects }) => {
   const [copied, setCopied] = useState(false);
   
-  // استدعاء آمن للغات
   const langContext = useLang() || {};
   const t = langContext.t || ((k) => k);
   const activeLang = langContext.lang || langContext.language || langContext.locale || "ar";
 
   if (!item) return null;
 
-  // 1. نظام ذكي وآمن جداً لاستخراج العنوان بـ 3 لغات بدون انهيار الموقع
   let displayTitle = "بدون عنوان";
   if (item.title) {
     if (typeof item.title === 'object') {
@@ -26,7 +24,6 @@ export const ContentCard = ({ item, dialects }) => {
   const imageUrl = String(item.imageUrl || item.image || "");
   const subtitle = item.subtitle ? String(t(item.subtitle)) : ""; 
 
-  // 2. حماية إضافية للهاشتاجات لتجنب أي شاشة سوداء أخرى
   let safeTags = ["عام"];
   if (Array.isArray(item.tags)) {
     safeTags = item.tags;
@@ -45,10 +42,10 @@ export const ContentCard = ({ item, dialects }) => {
   };
 
   return (
-    <div className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col h-full">
+    <div className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col aspect-square relative w-full h-full">
       
       {imageUrl && (
-        <div className="w-full h-48 overflow-hidden relative">
+        <div className="w-full h-[30%] shrink-0 overflow-hidden relative">
           <img 
             src={imageUrl} 
             alt={String(displayTitle)} 
@@ -59,26 +56,37 @@ export const ContentCard = ({ item, dialects }) => {
         </div>
       )}
       
-      <div className="p-5 flex flex-col flex-grow relative z-10 -mt-8">
-        <div className={`mb-4 ${activeLang === 'en' ? 'text-left' : 'text-right'}`}>
-          <h3 className="text-xl font-bold text-white mb-1">{String(displayTitle)}</h3>
-          {subtitle && <p className="text-sm text-gray-400 mb-2">{subtitle}</p>}
+      <div className="p-4 flex flex-col flex-grow relative z-10 -mt-4 min-h-0">
+        
+        <div className={`mb-2 shrink-0 ${activeLang === 'en' ? 'text-left' : 'text-right'}`}>
+          <h3 className="text-lg font-bold text-white mb-1 truncate">{String(displayTitle)}</h3>
+          {subtitle && <p className="text-xs text-gray-400 mb-1 truncate">{subtitle}</p>}
           
-          <div className={`flex flex-wrap gap-2 mt-2 ${activeLang === 'en' ? 'justify-start' : 'justify-end'}`}>
+          <div className={`flex flex-wrap gap-1 mt-1 overflow-hidden h-5 ${activeLang === 'en' ? 'justify-start' : 'justify-end'}`}>
             {safeTags.map((tag, i) => (
-              <span key={i} className="text-xs text-gray-400">#{String(tag)}</span>
+              <span key={i} className="text-[10px] text-gray-400">#{String(tag)}</span>
             ))}
           </div>
         </div>
         
-        <p className="text-gray-300 text-sm flex-grow mb-6 leading-relaxed font-mono" dir="ltr">
+        {/* الحل الجذري: استخدام خصائص CSS المباشرة لإجبار المتصفح على 7 أسطر */}
+        <div 
+          className="text-gray-300 text-[11px] sm:text-xs flex-grow mb-3 leading-relaxed font-mono overflow-hidden" 
+          dir="ltr"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 7,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}
+        >
           {text}
-        </p>
+        </div>
         
         <button 
           onClick={handleCopy}
           disabled={copied}
-          className={`mt-auto w-full py-2.5 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border ${
+          className={`mt-auto shrink-0 w-full py-2 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border text-sm ${
             copied 
               ? 'bg-[#1a202c] border-green-500/50 text-green-400' 
               : 'bg-[#15181e] hover:bg-[#1a202c] text-gray-300 border-[#2D3340]' 
