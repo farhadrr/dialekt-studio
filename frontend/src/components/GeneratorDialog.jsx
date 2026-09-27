@@ -34,9 +34,29 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     setLoading(true);
     setResult("");
     try {
-      const { data } = await api.post("/generate", { category, dialect, topic, vibe });
-      setResult(data.text);
+      // تجميع المدخلات في أمر (Prompt) واحد واضح للذكاء الاصطناعي
+      const finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nاللهجة: ${dialect}\nالموضوع: ${topic}\nالطابع: ${vibe}`;
+
+      // إرسال الطلب إلى Cloudflare Worker الخاص بك
+      const response = await fetch("https://dialekt-ai-proxy.farhad10180.workers.dev", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ prompt: finalPrompt })
+      });
+
+      const data = await response.json();
+
+      // استخراج النص من استجابة Gemini وعرضه
+      if (data.candidates && data.candidates.length > 0) {
+        setResult(data.candidates[0].content.parts[0].text);
+      } else {
+        console.error("استجابة غير متوقعة:", data);
+        toast.error("Generation failed. Please try again.");
+      }
     } catch (e) {
+      console.error("خطأ في الاتصال بالخادم:", e);
       toast.error("Generation failed. Please try again.");
     } finally {
       setLoading(false);
