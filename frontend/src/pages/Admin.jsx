@@ -3,14 +3,16 @@ import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from 'firebase
 import { db } from '@/firebase';
 
 export default function Admin() {
-  // 3 مربعات لعنوان الكرت بدلاً من واحد
   const [titleAr, setTitleAr] = useState('');
   const [titleEn, setTitleEn] = useState('');
   const [titleKu, setTitleKu] = useState('');
-  
   const [prompt, setPrompt] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('tiktok-scripts'); 
+  
+  // المتغير الجديد الذي طلبته لتعديل إطار الصورة
+  const [imagePosition, setImagePosition] = useState('object-center'); 
+  
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cards, setCards] = useState([]);
@@ -70,12 +72,11 @@ export default function Admin() {
         fastImageUrl = await compressAndConvertImage(imageFile);
       }
 
-      // تجميع العناوين الثلاثة في كائن واحد
       const titleData = { ar: titleAr, en: titleEn, ku: titleKu };
 
       if (editingId) {
         const cardRef = doc(db, 'cards', editingId);
-        const updateData = { title: titleData, prompt, category };
+        const updateData = { title: titleData, prompt, category, imagePosition };
         if (fastImageUrl) updateData.imageUrl = fastImageUrl; 
         
         await updateDoc(cardRef, updateData);
@@ -83,10 +84,11 @@ export default function Admin() {
         setEditingId(null);
       } else {
         await addDoc(collection(db, 'cards'), {
-          title: titleData, // إرسال العناوين باللغات الثلاث
+          title: titleData,
           prompt,
           imageUrl: fastImageUrl, 
           category, 
+          imagePosition, // حفظ إطار الصورة في الداتا بيز
           createdAt: new Date()
         });
         setStatus('تمت إضافة الكرت بنجاح! ✅');
@@ -95,6 +97,7 @@ export default function Admin() {
       setTitleAr(''); setTitleEn(''); setTitleKu('');
       setPrompt('');
       setImageFile(null);
+      setImagePosition('object-center'); // إعادة تعيين
       if(document.getElementById('imageInput')) document.getElementById('imageInput').value = '';
       fetchCards();
     } catch (error) {
@@ -106,7 +109,7 @@ export default function Admin() {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('هل أنت متأكد من حذف هذا الكرت نهائياً من الموقع؟')) {
+    if (window.confirm('هل أنت متأكد من حذف هذا الكرت؟')) {
       try {
         await deleteDoc(doc(db, 'cards', id));
         fetchCards();
@@ -119,20 +122,18 @@ export default function Admin() {
 
   const handleEditClick = (card) => {
     setEditingId(card.id);
-    
-    // التوافق مع الكروت القديمة والجديدة عند التعديل
     if (typeof card.title === 'object' && card.title !== null) {
       setTitleAr(card.title.ar || '');
       setTitleEn(card.title.en || '');
       setTitleKu(card.title.ku || '');
     } else {
       setTitleAr(card.title || '');
-      setTitleEn('');
-      setTitleKu('');
+      setTitleEn(''); setTitleKu('');
     }
-
     setPrompt(card.prompt || '');
     setCategory(card.category || 'tiktok-scripts');
+    // سحب الإطار المحفوظ أو وضع الوسط كافتراضي
+    setImagePosition(card.imagePosition || 'object-center'); 
     setImageFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
@@ -142,6 +143,7 @@ export default function Admin() {
     setTitleAr(''); setTitleEn(''); setTitleKu('');
     setPrompt('');
     setImageFile(null);
+    setImagePosition('object-center');
     setStatus('');
   };
 
@@ -169,67 +171,60 @@ export default function Admin() {
 
           <div className="grid grid-cols-1 gap-4 bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
             <h3 className="text-gray-400 font-bold mb-2">عناوين الكرت باللغات الثلاث:</h3>
-            <input 
-              type="text" value={titleAr} onChange={(e) => setTitleAr(e.target.value)} 
-              className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg focus:border-blue-500 text-white" placeholder="العنوان بالعربي 🇦🇪" required 
-            />
-            <input 
-              type="text" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} 
-              className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg focus:border-blue-500 text-white text-left" placeholder="العنوان بالإنجليزي 🇬🇧" dir="ltr" required 
-            />
-            <input 
-              type="text" value={titleKu} onChange={(e) => setTitleKu(e.target.value)} 
-              className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg focus:border-blue-500 text-white" placeholder="العنوان بالكردي ☀️" required 
-            />
+            <input type="text" value={titleAr} onChange={(e) => setTitleAr(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white" placeholder="العنوان بالعربي 🇦🇪" required />
+            <input type="text" value={titleEn} onChange={(e) => setTitleEn(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white text-left" placeholder="العنوان بالإنجليزي 🇬🇧" dir="ltr" required />
+            <input type="text" value={titleKu} onChange={(e) => setTitleKu(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white" placeholder="العنوان بالكردي ☀️" required />
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2 font-medium">النص (البرومبت أو السكريبت)</label>
-            <textarea 
-              value={prompt} onChange={(e) => setPrompt(e.target.value)} 
-              className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:border-blue-500 text-white" rows="4" placeholder="اكتب المحتوى هنا..." required 
-            ></textarea>
+            <label className="block text-gray-300 mb-2 font-medium">النص (البرومبت)</label>
+            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" rows="4" required></textarea>
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2 font-medium">
-              {editingId ? 'تغيير الصورة (اختياري)' : 'اختر صورة من الهاتف'}
-            </label>
-            <input 
-              type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} 
-              className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white file:mr-4 file:py-2 file:px-4 file:rounded-full file:bg-blue-600 file:text-white"
-              required={!editingId} 
-            />
+            <label className="block text-gray-300 mb-2 font-medium">{editingId ? 'تغيير الصورة' : 'الصورة'}</label>
+            <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" required={!editingId} />
+          </div>
+
+          {/* الخيار العبقري الذي اقترحته */}
+          <div className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
+            <label className="block text-blue-400 mb-2 font-bold">🎯 تعديل إطار الصورة (التركيز)</label>
+            <select 
+              value={imagePosition} 
+              onChange={(e) => setImagePosition(e.target.value)} 
+              className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-xl text-white"
+            >
+              <option value="object-center">وسط الصورة (للمناظر الطبيعية والعامة)</option>
+              <option value="object-top">أعلى الصورة (ممتاز لإظهار وجوه الأشخاص)</option>
+              <option value="object-bottom">أسفل الصورة</option>
+            </select>
           </div>
 
           <div className="flex gap-4">
             <button type="submit" disabled={isSubmitting} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-3 px-4 rounded-xl">
               {isSubmitting ? 'جاري التنفيذ...' : (editingId ? 'حفظ التعديلات' : 'إضافة الكرت')}
             </button>
-            {editingId && (
-              <button type="button" onClick={cancelEdit} className="flex-1 bg-gray-700 text-white font-bold py-3 px-4 rounded-xl">إلغاء</button>
-            )}
+            {editingId && <button type="button" onClick={cancelEdit} className="flex-1 bg-gray-700 text-white font-bold py-3 px-4 rounded-xl">إلغاء</button>}
           </div>
         </form>
       </div>
-
+      
+      {/* جزء عرض الكروت */}
       <div className="w-full max-w-2xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800">
         <h3 className="text-xl font-bold mb-6 text-white border-b border-gray-700 pb-3">إدارة الكروت</h3>
         <div className="space-y-4">
           {cards.map(card => (
             <div key={card.id} className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-4 w-full">
-                {card.imageUrl && <img src={card.imageUrl} alt="Card" className="w-16 h-16 object-cover rounded-lg" />}
+                {card.imageUrl && <img src={card.imageUrl} alt="Card" className={`w-16 h-16 object-cover rounded-lg ${card.imagePosition || 'object-center'}`} />}
                 <div>
-                  <h4 className="font-bold text-white text-lg">
-                    {typeof card.title === 'object' ? card.title.ar : card.title}
-                  </h4>
-                  <span className="text-xs text-cyan-400 bg-cyan-900/30 px-2 py-1 rounded-md">{card.category}</span>
+                  <h4 className="font-bold text-white text-lg">{typeof card.title === 'object' ? card.title.ar : card.title}</h4>
+                  <span className="text-xs text-cyan-400">{card.category}</span>
                 </div>
               </div>
               <div className="flex gap-2">
-                <button onClick={() => handleEditClick(card)} className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-lg">تعديل ✏️</button>
-                <button onClick={() => handleDelete(card.id)} className="bg-red-600/20 text-red-400 px-4 py-2 rounded-lg">حذف 🗑️</button>
+                <button onClick={() => handleEditClick(card)} className="bg-blue-600/20 text-blue-400 px-4 py-2 rounded-lg">تعديل</button>
+                <button onClick={() => handleDelete(card.id)} className="bg-red-600/20 text-red-400 px-4 py-2 rounded-lg">حذف</button>
               </div>
             </div>
           ))}
