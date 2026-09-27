@@ -1,69 +1,80 @@
 import React, { useState } from "react";
 import { Copy, Check } from "lucide-react"; 
+import { useLang } from "@/context/LanguageContext";
 
 export const ContentCard = ({ item, dialects }) => {
   const [copied, setCopied] = useState(false);
+  
+  // استدعاء آمن للغات
+  const langContext = useLang() || {};
+  const t = langContext.t || ((k) => k);
+  const activeLang = langContext.lang || langContext.language || langContext.locale || "ar";
 
   if (!item) return null;
 
-  const title = item.title || "بدون عنوان";
-  const text = item.prompt || item.desc || "";
-  const imageUrl = item.imageUrl || item.image || "";
-  
-  const dialectName = dialects?.find(d => d.code === item.dialect)?.name_native || item.dialect || "";
-  
-  // نفترض وجود عنوان فرعي إنجليزي أو وصف قصير، إن لم يوجد نتركه فارغاً
-  const subtitle = item.subtitle || ""; 
+  // 1. نظام ذكي وآمن جداً لاستخراج العنوان بـ 3 لغات بدون انهيار الموقع
+  let displayTitle = "بدون عنوان";
+  if (item.title) {
+    if (typeof item.title === 'object') {
+      displayTitle = item.title[activeLang] || item.title['ar'] || item.title['en'] || "بدون عنوان";
+    } else {
+      displayTitle = t(item.title) || item.title;
+    }
+  }
 
-  // محاكاة نظام الهاشتاجات إذا لم تكن موجودة في البيانات
-  const tags = item.tags || [dialectName || "كل اللهجات", "عام"];
+  const text = String(item.prompt || item.desc || "");
+  const imageUrl = String(item.imageUrl || item.image || "");
+  const subtitle = item.subtitle ? String(t(item.subtitle)) : ""; 
+
+  // 2. حماية إضافية للهاشتاجات لتجنب أي شاشة سوداء أخرى
+  let safeTags = ["عام"];
+  if (Array.isArray(item.tags)) {
+    safeTags = item.tags;
+  } else if (typeof item.tags === 'string') {
+    safeTags = item.tags.split(',').map(s => s.trim());
+  } else {
+    const dName = dialects?.find(d => d.code === item.dialect)?.name_native || item.dialect || "";
+    safeTags = [dName || "كل اللهجات", "عام"];
+  }
 
   const handleCopy = () => {
+    if (!text) return;
     navigator.clipboard.writeText(text);
     setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000); 
+    setTimeout(() => setCopied(false), 2000); 
   };
 
   return (
-    // الإطار الخارجي بنفس ألوان التصميم الأصلي
     <div className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col h-full">
       
       {imageUrl && (
         <div className="w-full h-48 overflow-hidden relative">
           <img 
             src={imageUrl} 
-            alt={title} 
+            alt={String(displayTitle)} 
             className="w-full h-full object-cover"
+            onError={(e) => e.target.style.display='none'} 
           />
-          {/* التدرج اللوني فوق الصورة كما في التصميم الأصلي */}
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F232B] to-transparent"></div>
         </div>
       )}
       
       <div className="p-5 flex flex-col flex-grow relative z-10 -mt-8">
-        
-        {/* قسم العناوين والهاشتاجات */}
-        <div className="text-right mb-4">
-          <h3 className="text-xl font-bold text-white mb-1">{title}</h3>
+        <div className={`mb-4 ${activeLang === 'en' ? 'text-left' : 'text-right'}`}>
+          <h3 className="text-xl font-bold text-white mb-1">{String(displayTitle)}</h3>
           {subtitle && <p className="text-sm text-gray-400 mb-2">{subtitle}</p>}
           
-          <div className="flex flex-wrap justify-end gap-2 mt-2">
-            {tags.map((tag, i) => (
-              <span key={i} className="text-xs text-gray-400">
-                #{tag}
-              </span>
+          <div className={`flex flex-wrap gap-2 mt-2 ${activeLang === 'en' ? 'justify-start' : 'justify-end'}`}>
+            {safeTags.map((tag, i) => (
+              <span key={i} className="text-xs text-gray-400">#{String(tag)}</span>
             ))}
           </div>
         </div>
         
-        {/* النص بخط الـ Monospace كما في التصميم */}
         <p className="text-gray-300 text-sm flex-grow mb-6 leading-relaxed font-mono" dir="ltr">
           {text}
         </p>
         
-        {/* زر النسخ */}
         <button 
           onClick={handleCopy}
           disabled={copied}
@@ -75,12 +86,12 @@ export const ContentCard = ({ item, dialects }) => {
         >
           {copied ? (
             <>
-              <span>تم النسخ</span>
+              <span>{t("copied") || "تم النسخ"}</span>
               <Check className="w-4 h-4 text-green-400" />
             </>
           ) : (
             <>
-              <span>نسخ</span>
+              <span>{t("copy") || "نسخ"}</span>
               <Copy className="w-4 h-4" />
             </>
           )}
