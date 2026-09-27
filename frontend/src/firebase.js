@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCbqqtEfCiaVQf7hNb4Bu8d5IA4xiIF4MU",
@@ -11,6 +12,7 @@ const firebaseConfig = {
   measurementId: "G-3Q8YG0J455"
 };
 
-// تهيئة الاتصال بقاعدة البيانات
+// تهيئة الاتصال
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
+export const storage = getStorage(app); // السطر الجديد للتخزين
