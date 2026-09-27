@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Wand2, Copy, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -19,7 +20,6 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
   const { t, tf } = useLang();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState(defaultCategory);
-  const [dialect, setDialect] = useState("ar-EG");
   const [topic, setTopic] = useState("");
   const [vibe, setVibe] = useState("viral");
   const [loading, setLoading] = useState(false);
@@ -34,7 +34,7 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     setLoading(true);
     setResult("");
     try {
-      // بناء الأمر (Prompt) بناءً على القسم المختار
+      // بناء الأمر (Prompt) بناءً على القسم المختار (بدون لهجة)
       let finalPrompt = "";
       
       if (category === "ai-prompts" || category.includes("prompt")) {
@@ -47,8 +47,8 @@ RULES:
 2. NO Arabic words, NO greetings, NO explanations, NO markdown formatting around the text.
 3. Include subject, setting, lighting, camera details, and end with --ar 16:9 --v 6.0`;
       } else {
-        // الأمر الطبيعي لباقي الأقسام
-        finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nاللهجة: ${dialect}\nالموضوع: ${topic}\nالطابع: ${vibe}`;
+        // الأمر الطبيعي لباقي الأقسام (تم إزالة متغير اللهجة)
+        finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nالموضوع: ${topic}\nالطابع: ${vibe}`;
       }
 
       // إرسال الطلب إلى Cloudflare Worker الخاص بك
@@ -62,7 +62,7 @@ RULES:
 
       const data = await response.json();
 
-      // استخراج النص من استجابة Gemini وعرضه
+      // استخراج النص من استجابة الخادم
       if (data.candidates && data.candidates.length > 0) {
         setResult(data.candidates[0].content.parts[0].text);
       } else {
@@ -100,7 +100,8 @@ RULES:
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          <div className="grid grid-cols-2 gap-3">
+          {/* تم تعديل الشبكة لتأخذ عرض كامل للقسم بعد إزالة اللهجة */}
+          <div className="grid grid-cols-1 gap-3">
             <div className="space-y-1.5">
               <Label>{t("field_category")}</Label>
               <Select value={category} onValueChange={setCategory}>
@@ -114,19 +115,7 @@ RULES:
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>{t("field_dialect")}</Label>
-              <Select value={dialect} onValueChange={setDialect}>
-                <SelectTrigger data-testid="gen-dialect-select" className="bg-ink-surface border-ink-border">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {dialects.map((d) => (
-                    <SelectItem key={d.code} value={d.code}>{d.name_native}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* تم إزالة حقل اختيار اللهجة (Dialect) من هنا */}
           </div>
 
           <div className="space-y-1.5">
