@@ -4,7 +4,8 @@ import { useLang } from "@/context/LanguageContext";
 import { api, CATEGORIES, accentMap } from "@/lib/api";
 import { ContentCard } from "@/components/ContentCard";
 import { AdBanner } from "@/components/AdBanner";
-import { collection, getDocs } from 'firebase/firestore';
+// تم إضافة query و where هنا لفلترة البيانات من الخادم مباشرة
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/firebase';
 
 export default function Library() {
@@ -27,9 +28,11 @@ export default function Library() {
       setLoading(true);
       setActiveDialect("all");
       try {
-        const querySnapshot = await getDocs(collection(db, 'cards'));
+        // التعديل السحري للسرعة: جلب كروت هذا القسم فقط بدلاً من جلب كل قاعدة البيانات
+        const q = query(collection(db, 'cards'), where("category", "==", cat.id));
+        const querySnapshot = await getDocs(q);
         
-        const allCards = querySnapshot.docs.map(doc => {
+        const categoryCards = querySnapshot.docs.map(doc => {
           const data = doc.data();
           return {
             id: doc.id,
@@ -40,12 +43,11 @@ export default function Library() {
             category: data.category,
             dialect: data.dialect || 'sorani', 
             createdAt: data.createdAt,
-            imagePosition: data.imagePosition || '50' // السطر الذي ينقل رقم موقع الصورة إلى الكرت
+            imagePosition: data.imagePosition || '50' 
           };
         });
 
-        const categoryCards = allCards.filter(c => c.category === cat.id);
-
+        // ترتيب الكروت من الأحدث للأقدم
         categoryCards.sort((a, b) => {
           const timeA = a.createdAt?.seconds || 0;
           const timeB = b.createdAt?.seconds || 0;
