@@ -9,7 +9,10 @@ export default function Admin() {
   const [prompt, setPrompt] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('tiktok-scripts'); 
-  const [imagePosition, setImagePosition] = useState('50'); // 50 تعني المنتصف تماماً
+  const [imagePosition, setImagePosition] = useState('50'); 
+  
+  // متغير جديد لعرض الصورة بصرياً داخل الإطار
+  const [previewUrl, setPreviewUrl] = useState(null);
   
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -30,6 +33,15 @@ export default function Admin() {
   useEffect(() => {
     fetchCards();
   }, []);
+
+  // تحديث المعاينة البصرية فور اختيار صورة جديدة من الجهاز
+  useEffect(() => {
+    if (imageFile) {
+      const objectUrl = URL.createObjectURL(imageFile);
+      setPreviewUrl(objectUrl);
+      return () => URL.revokeObjectURL(objectUrl);
+    }
+  }, [imageFile]);
 
   const compressAndConvertImage = (file) => {
     return new Promise((resolve) => {
@@ -95,6 +107,7 @@ export default function Admin() {
       setTitleAr(''); setTitleEn(''); setTitleKu('');
       setPrompt('');
       setImageFile(null);
+      setPreviewUrl(null); // مسح المعاينة
       setImagePosition('50');
       if(document.getElementById('imageInput')) document.getElementById('imageInput').value = '';
       fetchCards();
@@ -131,13 +144,14 @@ export default function Admin() {
     setPrompt(card.prompt || '');
     setCategory(card.category || 'tiktok-scripts');
     
-    // تحويل الكروت القديمة إلى أرقام في شريط التمرير
     if (card.imagePosition === 'object-top') setImagePosition('0');
     else if (card.imagePosition === 'object-bottom') setImagePosition('100');
     else if (card.imagePosition === 'object-center') setImagePosition('50');
     else setImagePosition(card.imagePosition || '50');
     
     setImageFile(null);
+    setPreviewUrl(card.imageUrl || null); // جلب صورة الكرت للمعاينة البصرية
+    
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
 
@@ -146,6 +160,7 @@ export default function Admin() {
     setTitleAr(''); setTitleEn(''); setTitleKu('');
     setPrompt('');
     setImageFile(null);
+    setPreviewUrl(null);
     setImagePosition('50');
     setStatus('');
   };
@@ -185,26 +200,37 @@ export default function Admin() {
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2 font-medium">{editingId ? 'تغيير الصورة' : 'الصورة'}</label>
-            <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" required={!editingId} />
+            <label className="block text-gray-300 mb-2 font-medium">{editingId ? 'تغيير الصورة' : 'إرفاق صورة جديدة'}</label>
+            <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" required={!editingId && !previewUrl} />
           </div>
 
-          {/* شريط التحكم الدقيق الجديد */}
-          <div className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
-            <label className="block text-blue-400 mb-2 font-bold flex justify-between">
-              <span>🎯 تعديل موقع الصورة (التركيز)</span>
-              <span>{imagePosition}%</span>
-            </label>
-            <p className="text-xs text-gray-400 mb-4">اسحب المؤشر لرفع أو تنزيل محتوى الصورة (0 للرأس، 100 للقدمين)</p>
-            <input 
-              type="range" 
-              min="0" 
-              max="100" 
-              value={imagePosition} 
-              onChange={(e) => setImagePosition(e.target.value)} 
-              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-            />
-          </div>
+          {/* قسم المعاينة البصرية (Visual Cropper) */}
+          {previewUrl && (
+            <div className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
+              <label className="block text-blue-400 mb-4 font-bold text-center">🎯 المعاينة المباشرة (Live Preview)</label>
+              
+              {/* الإطار الذي يماثل الكرت في الموقع تماماً */}
+              <div className="w-full max-w-sm mx-auto h-[280px] sm:h-[320px] rounded-2xl overflow-hidden border-2 border-dashed border-gray-500 relative mb-4">
+                <img 
+                  src={previewUrl} 
+                  alt="Preview" 
+                  className="w-full h-full object-cover transition-all duration-75"
+                  style={{ objectPosition: `center ${imagePosition}%` }} // الصورة تتحرك فوراً
+                />
+              </div>
+
+              {/* شريط التحكم */}
+              <input 
+                type="range" 
+                min="0" 
+                max="100" 
+                value={imagePosition} 
+                onChange={(e) => setImagePosition(e.target.value)} 
+                className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+              />
+              <p className="text-xs text-gray-400 mt-2 text-center">اسحب المؤشر لترى الصورة تتحرك داخل الإطار بوضوح (0=رأس، 100=قدمين)</p>
+            </div>
+          )}
 
           <div className="flex gap-4">
             <button type="submit" disabled={isSubmitting} className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl transition-colors">
@@ -227,7 +253,7 @@ export default function Admin() {
                      src={card.imageUrl} 
                      alt="Card" 
                      className="w-16 h-16 object-cover rounded-lg"
-                     style={{ objectPosition: `50% ${card.imagePosition === 'object-top' ? '0' : card.imagePosition === 'object-bottom' ? '100' : card.imagePosition === 'object-center' ? '50' : card.imagePosition || '50'}%` }}
+                     style={{ objectPosition: `center ${card.imagePosition === 'object-top' ? '0' : card.imagePosition === 'object-bottom' ? '100' : card.imagePosition === 'object-center' ? '50' : card.imagePosition || '50'}%` }}
                    />
                 )}
                 <div>
