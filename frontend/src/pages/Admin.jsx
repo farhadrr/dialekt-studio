@@ -9,7 +9,7 @@ export default function Admin() {
   const [prompt, setPrompt] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('tiktok-scripts'); 
-  const [imagePosition, setImagePosition] = useState('object-center'); 
+  const [imagePosition, setImagePosition] = useState('50'); // 50 تعني المنتصف تماماً
   
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,7 +95,7 @@ export default function Admin() {
       setTitleAr(''); setTitleEn(''); setTitleKu('');
       setPrompt('');
       setImageFile(null);
-      setImagePosition('object-center');
+      setImagePosition('50');
       if(document.getElementById('imageInput')) document.getElementById('imageInput').value = '';
       fetchCards();
     } catch (error) {
@@ -130,7 +130,13 @@ export default function Admin() {
     }
     setPrompt(card.prompt || '');
     setCategory(card.category || 'tiktok-scripts');
-    setImagePosition(card.imagePosition || 'object-center'); 
+    
+    // تحويل الكروت القديمة إلى أرقام في شريط التمرير
+    if (card.imagePosition === 'object-top') setImagePosition('0');
+    else if (card.imagePosition === 'object-bottom') setImagePosition('100');
+    else if (card.imagePosition === 'object-center') setImagePosition('50');
+    else setImagePosition(card.imagePosition || '50');
+    
     setImageFile(null);
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
@@ -140,7 +146,7 @@ export default function Admin() {
     setTitleAr(''); setTitleEn(''); setTitleKu('');
     setPrompt('');
     setImageFile(null);
-    setImagePosition('object-center');
+    setImagePosition('50');
     setStatus('');
   };
 
@@ -183,17 +189,21 @@ export default function Admin() {
             <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" required={!editingId} />
           </div>
 
+          {/* شريط التحكم الدقيق الجديد */}
           <div className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
-            <label className="block text-blue-400 mb-2 font-bold">🎯 تعديل إطار الصورة (التركيز)</label>
-            <select 
+            <label className="block text-blue-400 mb-2 font-bold flex justify-between">
+              <span>🎯 تعديل موقع الصورة (التركيز)</span>
+              <span>{imagePosition}%</span>
+            </label>
+            <p className="text-xs text-gray-400 mb-4">اسحب المؤشر لرفع أو تنزيل محتوى الصورة (0 للرأس، 100 للقدمين)</p>
+            <input 
+              type="range" 
+              min="0" 
+              max="100" 
               value={imagePosition} 
               onChange={(e) => setImagePosition(e.target.value)} 
-              className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-xl text-white"
-            >
-              <option value="object-center">وسط الصورة (للمناظر الطبيعية والعامة)</option>
-              <option value="object-top">أعلى الصورة (ممتاز لإظهار وجوه الأشخاص)</option>
-              <option value="object-bottom">أسفل الصورة</option>
-            </select>
+              className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+            />
           </div>
 
           <div className="flex gap-4">
@@ -206,14 +216,20 @@ export default function Admin() {
         </form>
       </div>
       
-      {/* جزء عرض الكروت */}
       <div className="w-full max-w-2xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800">
         <h3 className="text-xl font-bold mb-6 text-white border-b border-gray-700 pb-3">إدارة الكروت</h3>
         <div className="space-y-4">
           {cards.map(card => (
             <div key={card.id} className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 hover:border-gray-500 transition-colors">
               <div className="flex items-center gap-4 w-full">
-                {card.imageUrl && <img src={card.imageUrl} alt="Card" className={`w-16 h-16 object-cover rounded-lg ${card.imagePosition || 'object-center'}`} />}
+                {card.imageUrl && (
+                   <img 
+                     src={card.imageUrl} 
+                     alt="Card" 
+                     className="w-16 h-16 object-cover rounded-lg"
+                     style={{ objectPosition: `50% ${card.imagePosition === 'object-top' ? '0' : card.imagePosition === 'object-bottom' ? '100' : card.imagePosition === 'object-center' ? '50' : card.imagePosition || '50'}%` }}
+                   />
+                )}
                 <div>
                   <h4 className="font-bold text-white text-lg">{typeof card.title === 'object' ? card.title.ar : card.title}</h4>
                   <span className="text-xs text-cyan-400 bg-cyan-900/30 px-2 py-1 rounded">{card.category}</span>
