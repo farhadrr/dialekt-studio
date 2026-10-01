@@ -24,7 +24,14 @@ export const ContentCard = ({ item, dialects }) => {
   const imageUrl = String(item.imageUrl || item.image || "");
   const subtitle = item.subtitle ? String(t(item.subtitle)) : ""; 
   
-  const imagePos = item.imagePosition || "object-center";
+  // السر هنا: تحويل الرقم إلى تموضع دقيق، ودعم الكروت القديمة
+  let objPos = "50% 50%"; 
+  if (item.imagePosition) {
+    if (item.imagePosition === "object-top") objPos = "50% 0%";
+    else if (item.imagePosition === "object-bottom") objPos = "50% 100%";
+    else if (item.imagePosition === "object-center") objPos = "50% 50%";
+    else objPos = `50% ${item.imagePosition}%`; 
+  }
 
   let safeTags = ["عام"];
   if (Array.isArray(item.tags)) {
@@ -45,17 +52,16 @@ export const ContentCard = ({ item, dialects }) => {
 
   return (
     <div 
-      // 1. كبرنا الكرت بالكامل (أصبح طوله 520 بكسل للهاتف و 580 بكسل للكمبيوتر)
       className="bg-[#1F232B] border border-[#2D3340] rounded-2xl overflow-hidden hover:shadow-[0_0_15px_rgba(255,0,128,0.2)] transition-shadow duration-300 flex flex-col relative w-full h-[520px] sm:h-[580px]"
     >
       
       {imageUrl && (
-        // 2. أعطينا كل المساحة الإضافية للصورة (أصبح طولها 280 بكسل للهاتف، ستظهر بشكل كامل وواضح جداً)
         <div className="w-full h-[280px] sm:h-[320px] shrink-0 overflow-hidden relative">
           <img 
             src={imageUrl} 
             alt={String(displayTitle)} 
-            className={`w-full h-full object-cover ${imagePos}`}
+            className="w-full h-full object-cover"
+            style={{ objectPosition: objPos }} // تطبيق التحكم الدقيق
             onError={(e) => e.target.style.display='none'} 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F232B] to-transparent"></div>
@@ -75,7 +81,6 @@ export const ContentCard = ({ item, dialects }) => {
           </div>
         </div>
         
-        {/* 3. النص بقي كما هو تماماً (7 أسطر فقط دون أي تغيير) */}
         <div 
           className="text-gray-300 text-xs sm:text-sm flex-grow leading-relaxed font-mono overflow-hidden mb-4" 
           dir="ltr"
