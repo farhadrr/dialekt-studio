@@ -39,7 +39,8 @@ export default function Library() {
             image: data.imageUrl || '', 
             category: data.category,
             dialect: data.dialect || 'sorani', 
-            createdAt: data.createdAt
+            createdAt: data.createdAt,
+            imagePosition: data.imagePosition || '50' // السطر الذي ينقل رقم موقع الصورة إلى الكرت
           };
         });
 
