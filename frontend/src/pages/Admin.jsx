@@ -1,9 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
-import { db, storage } from '@/firebase'; // تأكد من مسار الاستيراد حسب مشروعك
+import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
+import { db, storage, auth } from '@/firebase'; // تم إضافة auth هنا
 
 export default function Admin() {
+  // حالات المصادقة (Authentication States)
+  const [user, setUser] = useState(null);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  // حالات الكروت والصور
   const [titleAr, setTitleAr] = useState('');
   const [titleEn, setTitleEn] = useState('');
   const [titleKu, setTitleKu] = useState('');
@@ -12,11 +20,39 @@ export default function Admin() {
   const [category, setCategory] = useState('tiktok-scripts'); 
   const [imagePosition, setImagePosition] = useState('50'); 
   const [previewUrl, setPreviewUrl] = useState(null);
-  
   const [status, setStatus] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [cards, setCards] = useState([]);
   const [editingId, setEditingId] = useState(null);
+
+  // التحقق من حالة تسجيل الدخول عند فتح الصفحة
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        fetchCards(); // جلب البيانات فقط إذا كان المستخدم مسجل دخوله
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setAuthError('');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setEmail('');
+      setPassword('');
+    } catch (error) {
+      console.error(error);
+      setAuthError('البريد الإلكتروني أو كلمة المرور غير صحيحة ❌');
+    }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    setCards([]); // مسح البيانات من الشاشة عند الخروج
+  };
 
   const fetchCards = async () => {
     try {
@@ -28,10 +64,6 @@ export default function Admin() {
       console.error("Error fetching cards:", error);
     }
   };
-
-  useEffect(() => {
-    fetchCards();
-  }, []);
 
   useEffect(() => {
     if (imageFile) {
@@ -75,18 +107,14 @@ export default function Admin() {
     setStatus(editingId ? 'جاري التعديل ورفع البيانات...' : 'جاري الرفع إلى Storage... ⚡');
     
     try {
-      let finalImageUrl = ''; // الرابط النهائي الذي سيُحفظ
+      let finalImageUrl = ''; 
 
       if (imageFile) {
-        // ضغط الصورة
         const compressedBase64 = await compressAndConvertImage(imageFile);
-        // إنشاء اسم مميز للصورة لتجنب التكرار
         const fileName = `cards/${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
         const storageRef = ref(storage, fileName);
         
-        // رفع الصورة إلى Firebase Storage
         await uploadString(storageRef, compressedBase64, 'data_url');
-        // الحصول على الرابط المباشر
         finalImageUrl = await getDownloadURL(storageRef);
       }
 
@@ -124,16 +152,15 @@ export default function Admin() {
       setStatus('حدث خطأ أثناء الرفع ❌');
     } finally {
       setIsSubmitting(false);
+      setTimeout(() => setStatus(''), 3000);
     }
   };
 
   const handleDelete = async (card) => {
     if (window.confirm('هل أنت متأكد من حذف هذا الكرت وصورته نهائياً؟')) {
       try {
-        // 1. حذف الكرت من قاعدة البيانات Firestore
         await deleteDoc(doc(db, 'cards', card.id));
         
-        // 2. مسح الصورة من Storage لكي لا تستهلك مساحة (إذا كانت مرفوعة على Storage)
         if (card.imageUrl && card.imageUrl.includes('firebasestorage')) {
           const imageRef = ref(storage, card.imageUrl);
           await deleteObject(imageRef).catch(e => console.log('الصورة غير موجودة أو محذوفة مسبقاً'));
@@ -141,6 +168,7 @@ export default function Admin() {
 
         fetchCards();
         setStatus('تم الحذف بنجاح! 🗑️');
+        setTimeout(() => setStatus(''), 3000);
       } catch (error) {
         console.error("Error deleting:", error);
       }
@@ -181,12 +209,43 @@ export default function Admin() {
     setStatus('');
   };
 
+  // شاشة تسجيل الدخول (تظهر إذا لم يكن المستخدم مسجل دخوله)
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-[#0B0C10] text-white flex flex-col items-center justify-center py-12 px-4 font-sans">
+        <div className="w-full max-w-md bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800">
+          <h2 className="text-3xl font-bold mb-8 text-center text-blue-400">تسجيل دخول المدير 🔒</h2>
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div>
+              <label className="block text-gray-300 mb-2 font-medium">البريد الإلكتروني</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" required dir="ltr" />
+            </div>
+            <div>
+              <label className="block text-gray-300 mb-2 font-medium">كلمة المرور</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 text-white" required dir="ltr" />
+            </div>
+            <button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-3 px-4 rounded-xl transition-colors">
+              دخول
+            </button>
+            {authError && <div className="text-red-400 text-center font-bold">{authError}</div>}
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // لوحة التحكم (تظهر فقط للمدير المسجل)
   return (
     <div className="min-h-screen bg-[#0B0C10] text-white flex flex-col items-center py-12 px-4 font-sans">
       <div className="w-full max-w-2xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800 mb-10">
-        <h2 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-          {editingId ? 'تعديل الكرت ✏️' : 'لوحة تحكم الاستوديو'}
-        </h2>
+        <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
+          <h2 className="text-2xl sm:text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+            {editingId ? 'تعديل الكرت ✏️' : 'لوحة تحكم الاستوديو'}
+          </h2>
+          <button onClick={handleLogout} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 font-bold py-2 px-4 rounded-lg transition-colors text-sm">
+            تسجيل الخروج 🚪
+          </button>
+        </div>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           
@@ -212,7 +271,7 @@ export default function Admin() {
 
           <div>
             <label className="block text-gray-300 mb-2 font-medium">النص (البرومبت)</label>
-            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" rows="6" required></textarea>
+            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white focus:outline-none focus:border-blue-500" rows="6" required></textarea>
           </div>
 
           <div>
@@ -274,8 +333,6 @@ export default function Admin() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <button onClick={() => handleEditClick(card)} className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-4 py-2 rounded-lg transition-colors">تعديل</button>
-                
-                {/* تم تعديل هذا الزر ليرسل الكرت كاملاً بدلاً من الـ ID فقط */}
                 <button onClick={() => handleDelete(card)} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 px-4 py-2 rounded-lg transition-colors">حذف</button>
               </div>
             </div>
