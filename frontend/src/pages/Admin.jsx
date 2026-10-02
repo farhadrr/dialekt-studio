@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
+import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
+import { db, storage } from '@/firebase'; // تأكد من مسار الاستيراد حسب مشروعك
 
 export default function Admin() {
   const [titleAr, setTitleAr] = useState('');
@@ -10,8 +11,6 @@ export default function Admin() {
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('tiktok-scripts'); 
   const [imagePosition, setImagePosition] = useState('50'); 
-  
-  // متغير جديد لعرض الصورة بصرياً داخل الإطار
   const [previewUrl, setPreviewUrl] = useState(null);
   
   const [status, setStatus] = useState('');
@@ -34,7 +33,6 @@ export default function Admin() {
     fetchCards();
   }, []);
 
-  // تحديث المعاينة البصرية فور اختيار صورة جديدة من الجهاز
   useEffect(() => {
     if (imageFile) {
       const objectUrl = URL.createObjectURL(imageFile);
@@ -74,12 +72,22 @@ export default function Admin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatus(editingId ? 'جاري التعديل...' : 'جاري الإرسال بسرعة البرق... ⚡');
+    setStatus(editingId ? 'جاري التعديل ورفع البيانات...' : 'جاري الرفع إلى Storage... ⚡');
     
     try {
-      let fastImageUrl = '';
+      let finalImageUrl = ''; // الرابط النهائي الذي سيُحفظ
+
       if (imageFile) {
-        fastImageUrl = await compressAndConvertImage(imageFile);
+        // ضغط الصورة
+        const compressedBase64 = await compressAndConvertImage(imageFile);
+        // إنشاء اسم مميز للصورة لتجنب التكرار
+        const fileName = `cards/${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+        const storageRef = ref(storage, fileName);
+        
+        // رفع الصورة إلى Firebase Storage
+        await uploadString(storageRef, compressedBase64, 'data_url');
+        // الحصول على الرابط المباشر
+        finalImageUrl = await getDownloadURL(storageRef);
       }
 
       const titleData = { ar: titleAr, en: titleEn, ku: titleKu };
@@ -87,7 +95,7 @@ export default function Admin() {
       if (editingId) {
         const cardRef = doc(db, 'cards', editingId);
         const updateData = { title: titleData, prompt, category, imagePosition };
-        if (fastImageUrl) updateData.imageUrl = fastImageUrl; 
+        if (finalImageUrl) updateData.imageUrl = finalImageUrl; 
         
         await updateDoc(cardRef, updateData);
         setStatus('تم تعديل الكرت بنجاح! ✅');
@@ -96,33 +104,41 @@ export default function Admin() {
         await addDoc(collection(db, 'cards'), {
           title: titleData,
           prompt,
-          imageUrl: fastImageUrl, 
+          imageUrl: finalImageUrl, 
           category, 
           imagePosition,
           createdAt: new Date()
         });
-        setStatus('تمت إضافة الكرت بنجاح! ✅');
+        setStatus('تمت إضافة الكرت والصورة بنجاح! ✅');
       }
 
       setTitleAr(''); setTitleEn(''); setTitleKu('');
       setPrompt('');
       setImageFile(null);
-      setPreviewUrl(null); // مسح المعاينة
+      setPreviewUrl(null);
       setImagePosition('50');
       if(document.getElementById('imageInput')) document.getElementById('imageInput').value = '';
       fetchCards();
     } catch (error) {
       console.error(error);
-      setStatus('حدث خطأ ❌');
+      setStatus('حدث خطأ أثناء الرفع ❌');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('هل أنت متأكد من حذف هذا الكرت؟')) {
+  const handleDelete = async (card) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا الكرت وصورته نهائياً؟')) {
       try {
-        await deleteDoc(doc(db, 'cards', id));
+        // 1. حذف الكرت من قاعدة البيانات Firestore
+        await deleteDoc(doc(db, 'cards', card.id));
+        
+        // 2. مسح الصورة من Storage لكي لا تستهلك مساحة (إذا كانت مرفوعة على Storage)
+        if (card.imageUrl && card.imageUrl.includes('firebasestorage')) {
+          const imageRef = ref(storage, card.imageUrl);
+          await deleteObject(imageRef).catch(e => console.log('الصورة غير موجودة أو محذوفة مسبقاً'));
+        }
+
         fetchCards();
         setStatus('تم الحذف بنجاح! 🗑️');
       } catch (error) {
@@ -150,7 +166,7 @@ export default function Admin() {
     else setImagePosition(card.imagePosition || '50');
     
     setImageFile(null);
-    setPreviewUrl(card.imageUrl || null); // جلب صورة الكرت للمعاينة البصرية
+    setPreviewUrl(card.imageUrl || null);
     
     window.scrollTo({ top: 0, behavior: 'smooth' }); 
   };
@@ -204,22 +220,17 @@ export default function Admin() {
             <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" required={!editingId && !previewUrl} />
           </div>
 
-          {/* قسم المعاينة البصرية (Visual Cropper) */}
           {previewUrl && (
             <div className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
               <label className="block text-blue-400 mb-4 font-bold text-center">🎯 المعاينة المباشرة (Live Preview)</label>
-              
-              {/* الإطار الذي يماثل الكرت في الموقع تماماً */}
               <div className="w-full max-w-sm mx-auto h-[280px] sm:h-[320px] rounded-2xl overflow-hidden border-2 border-dashed border-gray-500 relative mb-4">
                 <img 
                   src={previewUrl} 
                   alt="Preview" 
                   className="w-full h-full object-cover transition-all duration-75"
-                  style={{ objectPosition: `center ${imagePosition}%` }} // الصورة تتحرك فوراً
+                  style={{ objectPosition: `center ${imagePosition}%` }}
                 />
               </div>
-
-              {/* شريط التحكم */}
               <input 
                 type="range" 
                 min="0" 
@@ -263,7 +274,9 @@ export default function Admin() {
               </div>
               <div className="flex gap-2 shrink-0">
                 <button onClick={() => handleEditClick(card)} className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-4 py-2 rounded-lg transition-colors">تعديل</button>
-                <button onClick={() => handleDelete(card.id)} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 px-4 py-2 rounded-lg transition-colors">حذف</button>
+                
+                {/* تم تعديل هذا الزر ليرسل الكرت كاملاً بدلاً من الـ ID فقط */}
+                <button onClick={() => handleDelete(card)} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 px-4 py-2 rounded-lg transition-colors">حذف</button>
               </div>
             </div>
           ))}
