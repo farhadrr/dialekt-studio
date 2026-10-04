@@ -93,7 +93,7 @@ def dialect_label(code: str) -> str:
 def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
     label = dialect_label(req.dialect)
     
-    # حل المشكلة الجذري: إذا كان القسم يخص الصور، نلغي اللهجة العربية ونستخدم الإنجليزية فقط
+    # قسم توليد الصور
     if "prompt" in req.category.lower() or "image" in req.category.lower():
         sys_msg = "You are a professional Midjourney Prompt Engineer. Output ONLY English. No conversational text."
         prompt = (
@@ -106,14 +106,18 @@ def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
         )
         return prompt, sys_msg
 
+    # قسم توليد سيناريوهات تيك توك (التعديل الجديد الصارم)
     if req.category == "tiktok-scripts" or "script" in req.category.lower():
-        sys_msg = None
+        sys_msg = (
+            "You are an expert video scriptwriter. "
+            "CRITICAL RULE: Output ONLY the raw script. NO conversational text, NO greetings, NO explanations, NO introductions like 'Here is the script'."
+        )
         prompt = (
             f"Write a short-form TikTok video script about \"{req.topic}\" with a {req.vibe} vibe. "
             f"Write the script entirely in {label} dialect (native script). "
             f"Structure it clearly with three labeled parts using emojis: a scroll-stopping Hook (first 3 seconds), "
             f"a Body, and a Call-to-Action. Keep it punchy and natural to how people actually speak in that dialect. "
-            f"Do not add any explanation before or after the script."
+            f"IMPORTANT: Start immediately with the script. Do NOT say a single word outside of the script itself."
         )
         return prompt, sys_msg
     
@@ -128,7 +132,7 @@ def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
 
 
 async def run_llm(prompt: str, custom_system: Optional[str] = None) -> str:
-    # استخدام رسالة نظام مخصصة للصور (إنجليزية)، أو الافتراضية للمحتوى (عربية/كردية)
+    # استخدام رسالة نظام مخصصة للصور أو السيناريوهات، أو الافتراضية
     sys_msg = custom_system if custom_system else (
         "You are an expert TikTok content strategist and AI prompt engineer, "
         "fluent in all Arabic dialects and Kurdish (Sorani & Kurmanji). "
