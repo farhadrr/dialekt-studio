@@ -106,18 +106,21 @@ def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
         )
         return prompt, sys_msg
 
-    # قسم توليد سيناريوهات تيك توك (التعديل الجديد الصارم)
+    # قسم توليد سيناريوهات تيك توك (إجبار تام على القالب)
     if req.category == "tiktok-scripts" or "script" in req.category.lower():
         sys_msg = (
-            "You are an expert video scriptwriter. "
-            "CRITICAL RULE: Output ONLY the raw script. NO conversational text, NO greetings, NO explanations, NO introductions like 'Here is the script'."
+            "You are an AI that strictly returns ONLY the requested script content. "
+            "You are FORBIDDEN from using conversational language, greetings, or introductory phrases "
+            "such as 'إليك السيناريو' or 'هذا هو السيناريو'. Your output must start directly with '###'."
         )
         prompt = (
-            f"Write a short-form TikTok video script about \"{req.topic}\" with a {req.vibe} vibe. "
-            f"Write the script entirely in {label} dialect (native script). "
-            f"Structure it clearly with three labeled parts using emojis: a scroll-stopping Hook (first 3 seconds), "
-            f"a Body, and a Call-to-Action. Keep it punchy and natural to how people actually speak in that dialect. "
-            f"IMPORTANT: Start immediately with the script. Do NOT say a single word outside of the script itself."
+            f"Write a short TikTok script about \"{req.topic}\" with a {req.vibe} vibe.\n"
+            f"Language: {label} dialect ONLY.\n\n"
+            f"STRICT FORMATTING RULES:\n"
+            f"- DO NOT write any intro or outro text.\n"
+            f"- Start your response EXACTLY with '### عنوان الفيديو:'\n"
+            f"- Include: Title, Duration, Suggested Music, then the script (Hook, Body, CTA).\n"
+            f"If you write words like 'إليك' before the script, it is a failure."
         )
         return prompt, sys_msg
     
