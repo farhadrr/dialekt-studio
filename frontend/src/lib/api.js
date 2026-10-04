@@ -13,9 +13,9 @@ export const CATEGORIES = [
     badge: { en: "Viral Ready", ar: "جاهز للانتشار", ku: "ئامادەی ڤایراڵ" },
     title: { en: "Story Studio", ar: "استوديو القصص", ku: "ستۆدیۆیا چیرۆکان" },
     desc: {
-      en: "Smart scripts and viral hooks engineered to grab attention, maximize retention, and boost engagement in seconds.",
-      ar: "أفكار ونصوص ذكية مصممة لخطف الانتباه، رفع نسب المشاهدة، وزيادة التفاعل في ثوانٍ معدودة.",
-      ku: "تێکست و بیرۆکەیێن زیرەک کو تایبەت هاتینە دروستکرن بۆ ڕاکێشانا سەرنجێ، زێدەکرنا بینەران و کارلێکێ د چەند چرکەیەکدا.",
+      en: "A comprehensive library of ready-made scripts and stories, designed with precise prompts to transform ideas into cinematic scenes and professional videos with a single click.",
+      ar: "مكتبة متكاملة من السيناريوهات والقصص الجاهزة، مصممة بأوامر دقيقة (Prompts) لتحويل الأفكار إلى مشاهد سينمائية وفيديوهات احترافية بضغطة زر.",
+      ku: "پەرتووکخانەیەکا گشتگیر ژ سیناریۆ و چیرۆکێن ئامادە، کو ب فەرمانێن هویر (Prompts) هاتینە داڕێشتن بۆ گۆهڕینا هزران بۆ دیمەنێن سینەمایی و ڤیدیۆیێن پرۆفێشناڵ، ب تنێ ب داگرتنا دوگمەیەکێ.",
     },
   },
   {
