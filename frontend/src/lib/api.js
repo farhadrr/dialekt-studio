@@ -29,19 +29,7 @@ export const CATEGORIES = [
       ar: "برومبتات عالية التفصيل لميدجورني وفلكس ودال-إي، مضبوطة على الجماليات الشرق أوسطية والكردية.",
       ku: "پرۆمپتی وردی بەرز بۆ میدجەرنی و فلەکس و DALL-E، بۆ جوانیناسی ڕۆژهەڵاتی ناوەڕاست و کوردی.",
     },
-  },
-  {
-    id: "content-ideas",
-    icon: "Lightbulb",
-    accent: "gold",
-    badge: { en: "Trending Concepts", ar: "أفكار رائجة", ku: "بیرۆکەی ترێند" },
-    title: { en: "Content Ideas", ar: "أفكار محتوى", ku: "بیرۆکەی ناوەڕۆک" },
-    desc: {
-      en: "Trending concepts, dialect-specific skits and storyboards tailored for regional virality.",
-      ar: "أفكار رائجة، مشاهد كوميدية حسب اللهجة، وستوري بورد مصممة للانتشار الإقليمي.",
-      ku: "بیرۆکەی ترێند، سکێچی تایبەت بە زاراوە و ستۆری بۆرد بۆ ڤایراڵبوونی ناوچەیی.",
-    },
-  },
+  }
 ];
 
 export const accentMap = {
