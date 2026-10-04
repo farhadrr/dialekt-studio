@@ -22,7 +22,6 @@ export const Footer = () => {
             <div className="space-y-2">
               <Link to="/library/tiktok-scripts" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_scripts")}</Link>
               <Link to="/library/ai-prompts" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_prompts")}</Link>
-              <Link to="/library/content-ideas" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_ideas")}</Link>
               <Link to="/contact" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_contact")}</Link>
             </div>
           </div>
