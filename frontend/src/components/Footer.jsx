@@ -1,6 +1,5 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Sparkles } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
 
 export const Footer = () => {
@@ -11,9 +10,7 @@ export const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between gap-8">
           <div className="max-w-sm">
             <div className="flex items-center gap-2 mb-3">
-              <span className="grid place-items-center w-8 h-8 rounded-lg bg-gradient-to-br from-neon-cyan to-neon-pink">
-                <Sparkles className="w-4 h-4 text-[#0B0C10]" />
-              </span>
+              <img src="https://i.postimg.cc/MnYztDhs/logo.jpg" alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
               <span className="connected-text font-heading font-extrabold text-lg" style={{ letterSpacing: "0px", fontVariantLigatures: "normal", fontFeatureSettings: "'liga' 1, 'rlig' 1, 'dlig' 1" }}>{t("brand")}</span>
             </div>
             <p className="text-sm text-muted-foreground">{t("footer_tag")}</p>
