@@ -14,7 +14,6 @@ export const Header = () => {
     { to: "/", label: t("nav_home") },
     { to: "/library/tiktok-scripts", label: t("nav_scripts") },
     { to: "/library/ai-prompts", label: t("nav_prompts") },
-    { to: "/library/content-ideas", label: t("nav_ideas") },
     { to: "/contact", label: t("nav_contact") },
   ];
 
