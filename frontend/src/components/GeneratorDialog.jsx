@@ -34,11 +34,9 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     setLoading(true);
     setResult("");
     try {
-      // بناء الأمر (Prompt) بناءً على القسم المختار (بدون لهجة)
       let finalPrompt = "";
       
       if (category === "ai-prompts" || category.includes("prompt")) {
-        // أمر صارم بالإنجليزية لبرومبت الصور فقط
         finalPrompt = `CRITICAL INSTRUCTION: You MUST output ONLY in English. IGNORE ALL PREVIOUS RULES.
 Act as a professional Midjourney Prompt Engineer. Write ONE highly-detailed English Midjourney prompt for the following idea: "${topic}".
 Vibe/Style: ${vibe}
@@ -47,11 +45,10 @@ RULES:
 2. NO Arabic words, NO greetings, NO explanations, NO markdown formatting around the text.
 3. Include subject, setting, lighting, camera details, and end with --ar 16:9 --v 6.0`;
       } else {
-        // الأمر الطبيعي لباقي الأقسام (تم إزالة متغير اللهجة)
-        finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nالموضوع: ${topic}\nالطابع: ${vibe}`;
+        // تم تشديد الأوامر هنا لمنع المقدمات
+        finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nالموضوع: ${topic}\nالطابع: ${vibe}\n\nتعليمات صارمة جداً: اكتب المحتوى مباشرة. يمنع منعاً باتاً كتابة أي مقدمات مثل "إليك السيناريو" أو تحيات. ابدأ فوراً بكتابة "### عنوان الفيديو:" ثم أكمل المحتوى.`;
       }
 
-      // إرسال الطلب إلى Cloudflare Worker الخاص بك
       const response = await fetch("https://dialekt-ai-proxy.farhad10180.workers.dev", {
         method: "POST",
         headers: {
@@ -62,9 +59,18 @@ RULES:
 
       const data = await response.json();
 
-      // استخراج النص من استجابة الخادم
       if (data.candidates && data.candidates.length > 0) {
-        setResult(data.candidates[0].content.parts[0].text);
+        let rawText = data.candidates[0].content.parts[0].text;
+
+        // المقص البرمجي: مسح أي ثرثرة تسبق السيناريو
+        if (!category.includes("prompt")) {
+          const match = rawText.match(/(###|\*\*عنوان|عنوان الفيديو|العنوان:)/);
+          if (match) {
+            rawText = rawText.substring(match.index);
+          }
+        }
+
+        setResult(rawText.trim());
       } else {
         console.error("استجابة غير متوقعة:", data);
         toast.error("Generation failed. Please try again.");
@@ -100,7 +106,6 @@ RULES:
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
-          {/* تم تعديل الشبكة لتأخذ عرض كامل للقسم بعد إزالة اللهجة */}
           <div className="grid grid-cols-1 gap-3">
             <div className="space-y-1.5">
               <Label>{t("field_category")}</Label>
@@ -115,7 +120,6 @@ RULES:
                 </SelectContent>
               </Select>
             </div>
-            {/* تم إزالة حقل اختيار اللهجة (Dialect) من هنا */}
           </div>
 
           <div className="space-y-1.5">
