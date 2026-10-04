@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, Sparkles } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useLang } from "@/context/LanguageContext";
 import { LANGS } from "@/i18n";
 import { Button } from "@/components/ui/button";
@@ -27,9 +27,7 @@ export const Header = () => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <Link to="/" data-testid="brand-logo" className="flex items-center gap-2 shrink-0">
-          <span className="grid place-items-center w-9 h-9 rounded-xl bg-gradient-to-br from-neon-cyan to-neon-pink">
-            <Sparkles className="w-5 h-5 text-[#0B0C10]" />
-          </span>
+          <img src="https://i.postimg.cc/MnYztDhs/logo.jpg" alt="Logo" className="w-9 h-9 rounded-xl object-cover" />
           <span className="connected-text font-heading font-extrabold text-lg" style={{ letterSpacing: "0px", fontVariantLigatures: "normal", fontFeatureSettings: "'liga' 1, 'rlig' 1, 'dlig' 1" }}>
             {t("brand")}
           </span>
