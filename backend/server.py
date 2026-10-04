@@ -93,7 +93,6 @@ def dialect_label(code: str) -> str:
 def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
     label = dialect_label(req.dialect)
     
-    # قسم توليد الصور
     if "prompt" in req.category.lower() or "image" in req.category.lower():
         sys_msg = "You are a professional Midjourney Prompt Engineer. Output ONLY English. No conversational text."
         prompt = (
@@ -106,25 +105,16 @@ def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
         )
         return prompt, sys_msg
 
-    # قسم توليد سيناريوهات تيك توك (إجبار تام على القالب)
     if req.category == "tiktok-scripts" or "script" in req.category.lower():
-        sys_msg = (
-            "You are an AI that strictly returns ONLY the requested script content. "
-            "You are FORBIDDEN from using conversational language, greetings, or introductory phrases "
-            "such as 'إليك السيناريو' or 'هذا هو السيناريو'. Your output must start directly with '###'."
-        )
+        sys_msg = "You are a scriptwriter. Output ONLY the requested script content without any conversational text."
         prompt = (
             f"Write a short TikTok script about \"{req.topic}\" with a {req.vibe} vibe.\n"
             f"Language: {label} dialect ONLY.\n\n"
-            f"STRICT FORMATTING RULES:\n"
-            f"- DO NOT write any intro or outro text.\n"
-            f"- Start your response EXACTLY with '### عنوان الفيديو:'\n"
-            f"- Include: Title, Duration, Suggested Music, then the script (Hook, Body, CTA).\n"
-            f"If you write words like 'إليك' before the script, it is a failure."
+            f"Start your response EXACTLY with the text '### عنوان الفيديو:' followed by the title.\n"
+            f"Include Duration, Suggested Music, and the script (Hook, Body, CTA)."
         )
         return prompt, sys_msg
     
-    # الافتراضي: أفكار المحتوى
     sys_msg = None
     prompt = (
         f"Give a numbered list of 7 fresh, trending short-video content ideas about \"{req.topic}\" "
@@ -135,11 +125,9 @@ def build_prompt(req: GenerateRequest) -> Tuple[str, Optional[str]]:
 
 
 async def run_llm(prompt: str, custom_system: Optional[str] = None) -> str:
-    # استخدام رسالة نظام مخصصة للصور أو السيناريوهات، أو الافتراضية
     sys_msg = custom_system if custom_system else (
         "You are an expert TikTok content strategist and AI prompt engineer, "
-        "fluent in all Arabic dialects and Kurdish (Sorani & Kurmanji). "
-        "You write authentic, culturally accurate content that sounds native."
+        "fluent in all Arabic dialects and Kurdish (Sorani & Kurmanji)."
     )
     
     chat = LlmChat(
@@ -194,13 +182,18 @@ async def generate(request: Request, req: GenerateRequest):
         raise HTTPException(status_code=400, detail="Invalid category")
     text = ""
     try:
-        # فصل الـ prompt عن تعليمات النظام لإرسالها بشكل صحيح
         prompt_text, sys_msg = build_prompt(req)
         text = await run_llm(prompt_text, custom_system=sys_msg)
+        
+        # الحل البرمجي الإجباري: مسح أي ثرثرة قبل كلمة "###"
+        if req.category == "tiktok-scripts" or "script" in req.category.lower():
+            if "###" in text:
+                text = text[text.find("###"):] # يقص كل شيء قبل الـ ###
+                
     except Exception:
         logger.exception("Generation failed")
         raise HTTPException(status_code=500, detail="Generation failed. Please try again.")
-    return GenerateResponse(text=text)
+    return GenerateResponse(text=text.strip())
 
 
 @api_router.post("/generate-prompt", response_model=GenerateResponse)
