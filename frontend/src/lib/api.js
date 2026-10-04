@@ -11,11 +11,11 @@ export const CATEGORIES = [
     icon: "Clapperboard",
     accent: "cyan",
     badge: { en: "Viral Ready", ar: "جاهز للانتشار", ku: "ئامادەی ڤایراڵ" },
-    title: { en: "TikTok Scripts", ar: "سيناريوهات تيك توك", ku: "سکریپتی تیک تۆک" },
+    title: { en: "Story Studio", ar: "استوديو القصص", ku: "ستۆدیۆیا چیرۆکان" },
     desc: {
-      en: "Viral hooks, retention bodies, and CTA frameworks formatted for the short-form algorithm.",
-      ar: "هوكات فيرال، محتوى يحافظ على المشاهدة، وأطر دعوة للتفاعل مصممة لخوارزمية الفيديوهات القصيرة.",
-      ku: "هوکی ڤایراڵ، ناوەڕۆکی ڕاگرتنی بینەر، و چوارچێوەی بانگەواز بۆ ئەلگۆریتمی ڤیدیۆی کورت.",
+      en: "Smart scripts and viral hooks engineered to grab attention, maximize retention, and boost engagement in seconds.",
+      ar: "أفكار ونصوص ذكية مصممة لخطف الانتباه، رفع نسب المشاهدة، وزيادة التفاعل في ثوانٍ معدودة.",
+      ku: "تێکست و بیرۆکەیێن زیرەک کو تایبەت هاتینە دروستکرن بۆ ڕاکێشانا سەرنجێ، زێدەکرنا بینەران و کارلێکێ د چەند چرکەیەکدا.",
     },
   },
   {
