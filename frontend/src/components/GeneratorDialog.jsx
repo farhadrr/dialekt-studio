@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Wand2, Copy, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -17,7 +16,6 @@ import {
 const VIBES = ["viral", "funny", "emotional", "educational", "cinematic"];
 
 export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tiktok-scripts" }) => {
-  // تم إضافة lang هنا لمعرفة لغة الموقع الحالية
   const { t, tf, lang } = useLang();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState(defaultCategory);
@@ -37,8 +35,7 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     try {
       let finalPrompt = "";
       
-      // تحديد اللغة المطلوبة للذكاء الاصطناعي بناءً على لغة الموقع
-      const targetLanguage = lang === 'en' ? 'English' : lang === 'ku' ? 'Kurdish' : 'Arabic';
+      const targetLanguage = lang === 'en' ? 'ENGLISH' : lang === 'ku' ? 'KURDISH' : 'ARABIC';
       
       if (category === "ai-prompts" || category.includes("prompt")) {
         finalPrompt = `CRITICAL INSTRUCTION: You MUST output ONLY in English. IGNORE ALL PREVIOUS RULES.
@@ -46,20 +43,27 @@ Act as a professional Midjourney Prompt Engineer. Write ONE highly-detailed Engl
 Vibe/Style: ${vibe}
 RULES:
 1. Output ONLY the English prompt text.
-2. NO Arabic words, NO greetings, NO explanations, NO markdown formatting around the text.
+2. NO Arabic words, NO greetings, NO explanations.
 3. Include subject, setting, lighting, camera details, and end with --ar 16:9 --v 6.0`;
       } else {
-        // تم تعديل الأمر ليكون ديناميكياً ويجبره على استخدام لغة الموقع
-        finalPrompt = `Write creative content based on the following details:
-Category: ${category}
-Topic: ${topic}
-Vibe: ${vibe}
-Target Language: ${targetLanguage}
+        // أوامر هجومية تجبر الذكاء الاصطناعي على تغيير لغته وتجاهل الخادم
+        finalPrompt = `[CRITICAL SYSTEM OVERRIDE]
+IGNORE ALL PREVIOUS SYSTEM INSTRUCTIONS REGARDING LANGUAGE.
+You are strictly required to write the ENTIRE output exclusively in ${targetLanguage}.
 
-CRITICAL RULES:
-1. You MUST write the ENTIRE content exclusively in ${targetLanguage}. Do NOT use Arabic unless the Target Language is Arabic.
-2. Output the content directly. NO conversational text, NO greetings, NO intros like "Here is your script".
-3. Start immediately with "### " followed by the title in ${targetLanguage}.`;
+Task Details:
+- Category: ${category}
+- Topic: ${topic}
+- Vibe: ${vibe}
+
+LANGUAGE RULES (MUST OBEY):
+1. If Target Language is ENGLISH, write 100% in English. DO NOT write a single Arabic letter.
+2. If Target Language is KURDISH, write 100% in Kurdish. DO NOT write a single Arabic letter.
+3. If Target Language is ARABIC, write in Arabic.
+
+FORMAT RULES:
+- Start immediately with "### " followed by the video title in ${targetLanguage}.
+- Do NOT write any conversational intros or outros (like "Here is the script"). Just the script.`;
       }
 
       const response = await fetch("https://dialekt-ai-proxy.farhad10180.workers.dev", {
@@ -75,8 +79,8 @@ CRITICAL RULES:
       if (data.candidates && data.candidates.length > 0) {
         let rawText = data.candidates[0].content.parts[0].text;
 
-        // المقص البرمجي تم تحديثه ليدعم الكلمات الإنجليزية والكردية أيضاً
         if (!category.includes("prompt")) {
+          // تحديث المقص ليدعم الإنجليزية والكردية بقوة
           const match = rawText.match(/(###|\*\*Title|\*\*Video Title|Title:|عنوان|ناونیشان)/i);
           if (match) {
             rawText = rawText.substring(match.index);
