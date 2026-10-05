@@ -9,7 +9,8 @@ import Library from "@/pages/Library";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
 import About from "@/pages/About";
-import Privacy from "@/pages/Privacy"; // أضفنا استدعاء صفحة الخصوصية هنا
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms"; // أضفنا استدعاء صفحة الشروط هنا
 
 function App() {
   return (
@@ -24,7 +25,8 @@ function App() {
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/about" element={<About />} />
-              <Route path="/privacy" element={<Privacy />} /> {/* أضفنا مسار الخصوصية هنا */}
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} /> {/* أضفنا مسار الشروط هنا */}
             </Routes>
           </main>
           <Footer />
