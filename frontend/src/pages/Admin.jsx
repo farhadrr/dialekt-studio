@@ -2,16 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { collection, addDoc, getDocs, doc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL, deleteObject } from 'firebase/storage';
 import { signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'firebase/auth';
-import { db, storage, auth } from '@/firebase'; // تم إضافة auth هنا
+import { db, storage, auth } from '@/firebase';
 
 export default function Admin() {
-  // حالات المصادقة (Authentication States)
   const [user, setUser] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
-  // حالات الكروت والصور
   const [titleAr, setTitleAr] = useState('');
   const [titleEn, setTitleEn] = useState('');
   const [titleKu, setTitleKu] = useState('');
@@ -25,12 +23,11 @@ export default function Admin() {
   const [cards, setCards] = useState([]);
   const [editingId, setEditingId] = useState(null);
 
-  // التحقق من حالة تسجيل الدخول عند فتح الصفحة
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        fetchCards(); // جلب البيانات فقط إذا كان المستخدم مسجل دخوله
+        fetchCards();
       }
     });
     return () => unsubscribe();
@@ -51,7 +48,7 @@ export default function Admin() {
 
   const handleLogout = async () => {
     await signOut(auth);
-    setCards([]); // مسح البيانات من الشاشة عند الخروج
+    setCards([]);
   };
 
   const fetchCards = async () => {
@@ -137,7 +134,7 @@ export default function Admin() {
           imagePosition,
           createdAt: new Date()
         });
-        setStatus('تمت إضافة الكرت والصورة بنجاح! ✅');
+        setStatus('تمت إضافة الكرت بنجاح! ✅');
       }
 
       setTitleAr(''); setTitleEn(''); setTitleKu('');
@@ -157,7 +154,7 @@ export default function Admin() {
   };
 
   const handleDelete = async (card) => {
-    if (window.confirm('هل أنت متأكد من حذف هذا الكرت وصورته نهائياً؟')) {
+    if (window.confirm('هل أنت متأكد من حذف هذا الكرت نهائياً؟')) {
       try {
         await deleteDoc(doc(db, 'cards', card.id));
         
@@ -209,7 +206,6 @@ export default function Admin() {
     setStatus('');
   };
 
-  // شاشة تسجيل الدخول (تظهر إذا لم يكن المستخدم مسجل دخوله)
   if (!user) {
     return (
       <div className="min-h-screen bg-[#0B0C10] text-white flex flex-col items-center justify-center py-12 px-4 font-sans">
@@ -234,7 +230,6 @@ export default function Admin() {
     );
   }
 
-  // لوحة التحكم (تظهر فقط للمدير المسجل)
   return (
     <div className="min-h-screen bg-[#0B0C10] text-white flex flex-col items-center py-12 px-4 font-sans">
       <div className="w-full max-w-2xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800 mb-10">
@@ -275,8 +270,8 @@ export default function Admin() {
           </div>
 
           <div>
-            <label className="block text-gray-300 mb-2 font-medium">{editingId ? 'تغيير الصورة' : 'إرفاق صورة جديدة'}</label>
-            <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" required={!editingId && !previewUrl} />
+            <label className="block text-gray-300 mb-2 font-medium">{editingId ? 'تغيير الصورة' : 'إرفاق صورة جديدة (اختياري)'}</label>
+            <input type="file" id="imageInput" accept="image/*" onChange={(e) => setImageFile(e.target.files[0])} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white" />
           </div>
 
           {previewUrl && (
