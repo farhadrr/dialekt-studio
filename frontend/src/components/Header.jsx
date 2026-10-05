@@ -10,14 +10,14 @@ export const Header = () => {
   const [open, setOpen] = useState(false);
   const loc = useLocation();
 
-  // قسم "من نحن" تمت إضافته هنا
+  // تم إصلاح زر "من نحن" ليتغير فوراً مع تغيير لغة الموقع بدون أخطاء
   const links = [
     { to: "/", label: t("nav_home") },
     { to: "/library/tiktok-scripts", label: t("nav_scripts") },
     { to: "/library/ai-prompts", label: t("nav_prompts") },
     { 
       to: "/about", 
-      label: t("nav_about") || (lang === 'ar' ? 'من نحن' : lang === 'ku' ? 'دەربارە' : 'About') 
+      label: lang === 'ar' ? 'من نحن' : lang === 'ku' ? 'دەربارە' : 'About' 
     },
     { to: "/contact", label: t("nav_contact") },
   ];
