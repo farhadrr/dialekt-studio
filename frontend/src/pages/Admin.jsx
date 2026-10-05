@@ -10,10 +10,16 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [authError, setAuthError] = useState('');
 
+  // العناوين باللغات الثلاث
   const [titleAr, setTitleAr] = useState('');
   const [titleEn, setTitleEn] = useState('');
   const [titleKu, setTitleKu] = useState('');
-  const [prompt, setPrompt] = useState('');
+  
+  // النصوص باللغات الثلاث (التعديل الجديد)
+  const [promptAr, setPromptAr] = useState('');
+  const [promptEn, setPromptEn] = useState('');
+  const [promptKu, setPromptKu] = useState('');
+
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('tiktok-scripts'); 
   const [imagePosition, setImagePosition] = useState('50'); 
@@ -116,10 +122,11 @@ export default function Admin() {
       }
 
       const titleData = { ar: titleAr, en: titleEn, ku: titleKu };
+      const promptData = { ar: promptAr, en: promptEn, ku: promptKu }; // حفظ النصوص ككائن
 
       if (editingId) {
         const cardRef = doc(db, 'cards', editingId);
-        const updateData = { title: titleData, prompt, category, imagePosition };
+        const updateData = { title: titleData, prompt: promptData, category, imagePosition };
         if (finalImageUrl) updateData.imageUrl = finalImageUrl; 
         
         await updateDoc(cardRef, updateData);
@@ -128,7 +135,7 @@ export default function Admin() {
       } else {
         await addDoc(collection(db, 'cards'), {
           title: titleData,
-          prompt,
+          prompt: promptData,
           imageUrl: finalImageUrl, 
           category, 
           imagePosition,
@@ -137,8 +144,9 @@ export default function Admin() {
         setStatus('تمت إضافة الكرت بنجاح! ✅');
       }
 
+      // مسح الخانات بعد النجاح
       setTitleAr(''); setTitleEn(''); setTitleKu('');
-      setPrompt('');
+      setPromptAr(''); setPromptEn(''); setPromptKu('');
       setImageFile(null);
       setPreviewUrl(null);
       setImagePosition('50');
@@ -174,6 +182,7 @@ export default function Admin() {
 
   const handleEditClick = (card) => {
     setEditingId(card.id);
+    
     if (typeof card.title === 'object' && card.title !== null) {
       setTitleAr(card.title.ar || '');
       setTitleEn(card.title.en || '');
@@ -182,7 +191,18 @@ export default function Admin() {
       setTitleAr(card.title || '');
       setTitleEn(''); setTitleKu('');
     }
-    setPrompt(card.prompt || '');
+
+    // جلب النصوص باللغات الثلاث للتعديل
+    if (typeof card.prompt === 'object' && card.prompt !== null) {
+      setPromptAr(card.prompt.ar || '');
+      setPromptEn(card.prompt.en || '');
+      setPromptKu(card.prompt.ku || '');
+    } else {
+      // دعم الكروت القديمة
+      setPromptAr(card.prompt || '');
+      setPromptEn(''); setPromptKu('');
+    }
+
     setCategory(card.category || 'tiktok-scripts');
     
     if (card.imagePosition === 'object-top') setImagePosition('0');
@@ -199,7 +219,7 @@ export default function Admin() {
   const cancelEdit = () => {
     setEditingId(null);
     setTitleAr(''); setTitleEn(''); setTitleKu('');
-    setPrompt('');
+    setPromptAr(''); setPromptEn(''); setPromptKu('');
     setImageFile(null);
     setPreviewUrl(null);
     setImagePosition('50');
@@ -264,9 +284,12 @@ export default function Admin() {
             <input type="text" value={titleKu} onChange={(e) => setTitleKu(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white" placeholder="العنوان بالكردي ☀️" required />
           </div>
 
-          <div>
-            <label className="block text-gray-300 mb-2 font-medium">النص (البرومبت)</label>
-            <textarea value={prompt} onChange={(e) => setPrompt(e.target.value)} className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl text-white focus:outline-none focus:border-blue-500" rows="6" required></textarea>
+          {/* التعديل هنا: نصوص القصة بـ 3 لغات */}
+          <div className="grid grid-cols-1 gap-4 bg-[#0B0C10] p-4 rounded-xl border border-gray-700">
+            <h3 className="text-gray-400 font-bold mb-2">النص (السيناريو) باللغات الثلاث:</h3>
+            <textarea value={promptAr} onChange={(e) => setPromptAr(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="النص بالعربي 🇦🇪" rows="4" required></textarea>
+            <textarea value={promptEn} onChange={(e) => setPromptEn(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 text-left" placeholder="النص بالإنجليزي 🇬🇧" dir="ltr" rows="4" required></textarea>
+            <textarea value={promptKu} onChange={(e) => setPromptKu(e.target.value)} className="w-full p-3 bg-[#1F2833] border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500" placeholder="النص بالكردي ☀️" rows="4" required></textarea>
           </div>
 
           <div>
@@ -310,12 +333,10 @@ export default function Admin() {
       <div className="w-full max-w-4xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800">
         <h3 className="text-xl font-bold mb-6 text-white border-b border-gray-700 pb-3">إدارة الكروت</h3>
         
-        {/* تم تغيير التصميم هنا ليصبح شبكة (Grid) تعرض الكروت بشكل مشابه للموقع العام */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {cards.map(card => (
             <div key={card.id} className="bg-[#0B0C10] rounded-2xl border border-gray-700 overflow-hidden flex flex-col hover:border-gray-500 transition-colors">
               
-              {/* قسم الصورة مع التدرج والعنوان فوقها (يظهر فقط إذا كان هناك صورة) */}
               {card.imageUrl && (
                 <div className="relative h-48 w-full">
                   <img 
@@ -332,7 +353,6 @@ export default function Admin() {
               )}
 
               <div className="p-4 flex-1 flex flex-col">
-                {/* إذا لم يكن هناك صورة، نعرض العنوان هنا */}
                 {!card.imageUrl && (
                   <h4 className="font-bold text-white text-lg mb-3">
                     {typeof card.title === 'object' ? card.title.ar : card.title}
@@ -345,8 +365,9 @@ export default function Admin() {
                   </span>
                 </div>
                 
+                {/* عرض النص العربي كمعاينة في لوحة التحكم */}
                 <p className="text-sm text-gray-400 mb-4 font-mono bg-[#1a1f26] p-3 rounded-lg flex-1 line-clamp-4 hover:line-clamp-none transition-all">
-                  {card.prompt}
+                  {typeof card.prompt === 'object' ? card.prompt.ar : card.prompt}
                 </p>
 
                 <div className="flex gap-3 mt-auto pt-2 border-t border-gray-800">
