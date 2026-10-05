@@ -10,6 +10,7 @@ export default function About() {
         className="bg-[#1F232B] p-8 sm:p-12 rounded-3xl border border-[#2D3340] shadow-2xl"
         dir={lang === 'en' ? 'ltr' : 'rtl'}
       >
+        {/* اللغة الإنجليزية */}
         {lang === 'en' && (
           <div className="text-left">
             <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan to-neon-pink">
@@ -33,6 +34,7 @@ export default function About() {
           </div>
         )}
 
+        {/* اللغة الكردية */}
         {lang === 'ku' && (
           <div className="text-right">
             <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan to-neon-pink">
@@ -56,6 +58,7 @@ export default function About() {
           </div>
         )}
 
+        {/* اللغة العربية */}
         {lang === 'ar' && (
           <div className="text-right">
             <h1 className="text-3xl sm:text-4xl font-extrabold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-neon-cyan to-neon-pink">
