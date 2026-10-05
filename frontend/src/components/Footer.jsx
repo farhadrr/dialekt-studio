@@ -27,6 +27,9 @@ export const Footer = () => {
               <Link to="/privacy" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">
                 {lang === 'ar' ? 'سياسة الخصوصية' : lang === 'ku' ? 'سیاسەتی تایبەتمەندی' : 'Privacy Policy'}
               </Link>
+              <Link to="/terms" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">
+                {lang === 'ar' ? 'شروط الاستخدام' : lang === 'ku' ? 'مەرجەکانی بەکارهێنان' : 'Terms of Service'}
+              </Link>
             </div>
           </div>
         </div>
