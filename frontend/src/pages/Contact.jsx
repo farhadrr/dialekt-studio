@@ -59,6 +59,13 @@ export default function Contact() {
         </span>
         <h1 className="font-heading text-4xl sm:text-5xl font-extrabold tracking-tight">{t("contact_title")}</h1>
         <p className="text-muted-foreground mt-3 max-w-xl mx-auto">{t("contact_sub")}</p>
+        
+        <div className="mt-6 flex items-center justify-center">
+          <div className="flex items-center gap-2 bg-ink-surface px-5 py-2.5 rounded-full border border-ink-border text-gray-300 text-sm">
+            <Mail className="w-4 h-4 text-neon-cyan" />
+            <span dir="ltr" className="font-semibold tracking-wide">Dialectstudio40@gmail.com</span>
+          </div>
+        </div>
       </div>
 
       <div className="grid lg:grid-cols-[1fr_300px] gap-8 items-start">
