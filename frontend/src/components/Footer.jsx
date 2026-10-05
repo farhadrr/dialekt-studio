@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import { useLang } from "@/context/LanguageContext";
 
 export const Footer = () => {
-  const { t } = useLang();
+  const { t, lang } = useLang();
+  
   return (
     <footer data-testid="site-footer" className="border-t border-ink-border mt-24 grain">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
@@ -20,6 +21,12 @@ export const Footer = () => {
               <Link to="/library/tiktok-scripts" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_scripts")}</Link>
               <Link to="/library/ai-prompts" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_prompts")}</Link>
               <Link to="/contact" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">{t("nav_contact")}</Link>
+              <Link to="/about" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">
+                {lang === 'ar' ? 'من نحن' : lang === 'ku' ? 'دەربارە' : 'About Us'}
+              </Link>
+              <Link to="/privacy" className="block text-sm text-muted-foreground hover:text-neon-cyan transition-colors">
+                {lang === 'ar' ? 'سياسة الخصوصية' : lang === 'ku' ? 'سیاسەتی تایبەتمەندی' : 'Privacy Policy'}
+              </Link>
             </div>
           </div>
         </div>
