@@ -251,7 +251,7 @@ export default function Admin() {
               onChange={(e) => setCategory(e.target.value)} 
               className="w-full p-3 bg-[#0B0C10] border border-gray-700 rounded-xl focus:outline-none focus:border-blue-500 text-white"
             >
-              <option value="tiktok-scripts">سکریپتی تیک تۆک</option>
+              <option value="tiktok-scripts">استوديو قصص</option>
               <option value="ai-prompts">پرۆمپتی وێنەی AI</option>
               <option value="content-ideas">بیرۆکەی ناوەڕۆک</option>
             </select>
@@ -307,29 +307,58 @@ export default function Admin() {
         </form>
       </div>
       
-      <div className="w-full max-w-2xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800">
+      <div className="w-full max-w-4xl bg-[#1F2833] p-8 rounded-2xl shadow-2xl border border-gray-800">
         <h3 className="text-xl font-bold mb-6 text-white border-b border-gray-700 pb-3">إدارة الكروت</h3>
-        <div className="space-y-4">
+        
+        {/* تم تغيير التصميم هنا ليصبح شبكة (Grid) تعرض الكروت بشكل مشابه للموقع العام */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {cards.map(card => (
-            <div key={card.id} className="bg-[#0B0C10] p-4 rounded-xl border border-gray-700 flex flex-col sm:flex-row justify-between items-center gap-4 hover:border-gray-500 transition-colors">
-              <div className="flex items-center gap-4 w-full">
-                {card.imageUrl && (
-                   <img 
-                     src={card.imageUrl} 
-                     alt="Card" 
-                     className="w-16 h-16 object-cover rounded-lg"
-                     style={{ objectPosition: `center ${card.imagePosition === 'object-top' ? '0' : card.imagePosition === 'object-bottom' ? '100' : card.imagePosition === 'object-center' ? '50' : card.imagePosition || '50'}%` }}
-                   />
+            <div key={card.id} className="bg-[#0B0C10] rounded-2xl border border-gray-700 overflow-hidden flex flex-col hover:border-gray-500 transition-colors">
+              
+              {/* قسم الصورة مع التدرج والعنوان فوقها (يظهر فقط إذا كان هناك صورة) */}
+              {card.imageUrl && (
+                <div className="relative h-48 w-full">
+                  <img 
+                    src={card.imageUrl} 
+                    alt="Card" 
+                    className="w-full h-full object-cover"
+                    style={{ objectPosition: `center ${card.imagePosition === 'object-top' ? '0' : card.imagePosition === 'object-bottom' ? '100' : card.imagePosition === 'object-center' ? '50' : card.imagePosition || '50'}%` }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0B0C10] to-transparent"></div>
+                  <h4 className="absolute bottom-3 right-4 font-bold text-white text-lg z-10">
+                    {typeof card.title === 'object' ? card.title.ar : card.title}
+                  </h4>
+                </div>
+              )}
+
+              <div className="p-4 flex-1 flex flex-col">
+                {/* إذا لم يكن هناك صورة، نعرض العنوان هنا */}
+                {!card.imageUrl && (
+                  <h4 className="font-bold text-white text-lg mb-3">
+                    {typeof card.title === 'object' ? card.title.ar : card.title}
+                  </h4>
                 )}
-                <div>
-                  <h4 className="font-bold text-white text-lg">{typeof card.title === 'object' ? card.title.ar : card.title}</h4>
-                  <span className="text-xs text-cyan-400 bg-cyan-900/30 px-2 py-1 rounded">{card.category}</span>
+
+                <div className="flex gap-2 mb-3">
+                  <span className="text-xs text-cyan-400 bg-cyan-900/30 px-2 py-1 rounded-md">
+                    {card.category === 'tiktok-scripts' ? 'استوديو قصص' : card.category}
+                  </span>
+                </div>
+                
+                <p className="text-sm text-gray-400 mb-4 font-mono bg-[#1a1f26] p-3 rounded-lg flex-1 line-clamp-4 hover:line-clamp-none transition-all">
+                  {card.prompt}
+                </p>
+
+                <div className="flex gap-3 mt-auto pt-2 border-t border-gray-800">
+                  <button onClick={() => handleEditClick(card)} className="flex-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 font-bold py-2.5 rounded-xl transition-colors text-sm">
+                    تعديل ✏️
+                  </button>
+                  <button onClick={() => handleDelete(card)} className="flex-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 font-bold py-2.5 rounded-xl transition-colors text-sm">
+                    حذف 🗑️
+                  </button>
                 </div>
               </div>
-              <div className="flex gap-2 shrink-0">
-                <button onClick={() => handleEditClick(card)} className="bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 px-4 py-2 rounded-lg transition-colors">تعديل</button>
-                <button onClick={() => handleDelete(card)} className="bg-red-600/20 hover:bg-red-600/40 text-red-400 px-4 py-2 rounded-lg transition-colors">حذف</button>
-              </div>
+
             </div>
           ))}
         </div>
