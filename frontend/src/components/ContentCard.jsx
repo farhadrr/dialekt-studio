@@ -20,11 +20,18 @@ export const ContentCard = ({ item, dialects }) => {
     }
   }
 
-  const text = String(item.prompt || item.desc || "");
+  // التعديل هنا: قراءة النص (السيناريو) بناءً على لغة الموقع المحددة
+  let displayText = "";
+  if (typeof item.prompt === 'object' && item.prompt !== null) {
+    displayText = item.prompt[activeLang] || item.prompt['ar'] || item.prompt['en'] || "";
+  } else {
+    // دعم الكروت القديمة التي تحتوي على نص واحد فقط
+    displayText = String(item.prompt || item.desc || "");
+  }
+
   const imageUrl = String(item.imageUrl || item.image || "");
   const subtitle = item.subtitle ? String(t(item.subtitle)) : ""; 
   
-  // السر هنا: تحويل الرقم إلى تموضع دقيق، ودعم الكروت القديمة
   let objPos = "50% 50%"; 
   if (item.imagePosition) {
     if (item.imagePosition === "object-top") objPos = "50% 0%";
@@ -44,8 +51,8 @@ export const ContentCard = ({ item, dialects }) => {
   }
 
   const handleCopy = () => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
+    if (!displayText) return;
+    navigator.clipboard.writeText(displayText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000); 
   };
@@ -61,7 +68,7 @@ export const ContentCard = ({ item, dialects }) => {
             src={imageUrl} 
             alt={String(displayTitle)} 
             className="w-full h-full object-cover"
-            style={{ objectPosition: objPos }} // تطبيق التحكم الدقيق
+            style={{ objectPosition: objPos }} 
             onError={(e) => e.target.style.display='none'} 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#1F232B] to-transparent"></div>
@@ -81,17 +88,19 @@ export const ContentCard = ({ item, dialects }) => {
           </div>
         </div>
         
+        {/* التعديل هنا: محاذاة النص تلقائياً بناءً على لغة الموقع */}
         <div 
           className="text-gray-300 text-xs sm:text-sm flex-grow leading-relaxed font-mono overflow-hidden mb-4" 
-          dir="ltr"
+          dir="auto"
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 7,
             WebkitBoxOrient: 'vertical',
-            overflow: 'hidden'
+            overflow: 'hidden',
+            textAlign: activeLang === 'en' ? 'left' : 'right'
           }}
         >
-          {text}
+          {displayText}
         </div>
         
         <button 
