@@ -8,7 +8,8 @@ import Home from "@/pages/Home";
 import Library from "@/pages/Library";
 import Contact from "@/pages/Contact";
 import Admin from "@/pages/Admin";
-import About from "@/pages/About"; // أضفنا استدعاء الصفحة هنا
+import About from "@/pages/About";
+import Privacy from "@/pages/Privacy"; // أضفنا استدعاء صفحة الخصوصية هنا
 
 function App() {
   return (
@@ -22,7 +23,8 @@ function App() {
               <Route path="/library/:category" element={<Library />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/admin" element={<Admin />} />
-              <Route path="/about" element={<About />} /> {/* أضفنا الرابط هنا */}
+              <Route path="/about" element={<About />} />
+              <Route path="/privacy" element={<Privacy />} /> {/* أضفنا مسار الخصوصية هنا */}
             </Routes>
           </main>
           <Footer />
