@@ -17,7 +17,8 @@ import {
 const VIBES = ["viral", "funny", "emotional", "educational", "cinematic"];
 
 export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tiktok-scripts" }) => {
-  const { t, tf } = useLang();
+  // تم إضافة lang هنا لمعرفة لغة الموقع الحالية
+  const { t, tf, lang } = useLang();
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState(defaultCategory);
   const [topic, setTopic] = useState("");
@@ -36,6 +37,9 @@ export const GeneratorDialog = ({ trigger, dialects = [], defaultCategory = "tik
     try {
       let finalPrompt = "";
       
+      // تحديد اللغة المطلوبة للذكاء الاصطناعي بناءً على لغة الموقع
+      const targetLanguage = lang === 'en' ? 'English' : lang === 'ku' ? 'Kurdish' : 'Arabic';
+      
       if (category === "ai-prompts" || category.includes("prompt")) {
         finalPrompt = `CRITICAL INSTRUCTION: You MUST output ONLY in English. IGNORE ALL PREVIOUS RULES.
 Act as a professional Midjourney Prompt Engineer. Write ONE highly-detailed English Midjourney prompt for the following idea: "${topic}".
@@ -45,8 +49,17 @@ RULES:
 2. NO Arabic words, NO greetings, NO explanations, NO markdown formatting around the text.
 3. Include subject, setting, lighting, camera details, and end with --ar 16:9 --v 6.0`;
       } else {
-        // تم تشديد الأوامر هنا لمنع المقدمات
-        finalPrompt = `قم بكتابة محتوى إبداعي بناءً على المعطيات التالية:\nالقسم: ${category}\nالموضوع: ${topic}\nالطابع: ${vibe}\n\nتعليمات صارمة جداً: اكتب المحتوى مباشرة. يمنع منعاً باتاً كتابة أي مقدمات مثل "إليك السيناريو" أو تحيات. ابدأ فوراً بكتابة "### عنوان الفيديو:" ثم أكمل المحتوى.`;
+        // تم تعديل الأمر ليكون ديناميكياً ويجبره على استخدام لغة الموقع
+        finalPrompt = `Write creative content based on the following details:
+Category: ${category}
+Topic: ${topic}
+Vibe: ${vibe}
+Target Language: ${targetLanguage}
+
+CRITICAL RULES:
+1. You MUST write the ENTIRE content exclusively in ${targetLanguage}. Do NOT use Arabic unless the Target Language is Arabic.
+2. Output the content directly. NO conversational text, NO greetings, NO intros like "Here is your script".
+3. Start immediately with "### " followed by the title in ${targetLanguage}.`;
       }
 
       const response = await fetch("https://dialekt-ai-proxy.farhad10180.workers.dev", {
@@ -62,9 +75,9 @@ RULES:
       if (data.candidates && data.candidates.length > 0) {
         let rawText = data.candidates[0].content.parts[0].text;
 
-        // المقص البرمجي: مسح أي ثرثرة تسبق السيناريو
+        // المقص البرمجي تم تحديثه ليدعم الكلمات الإنجليزية والكردية أيضاً
         if (!category.includes("prompt")) {
-          const match = rawText.match(/(###|\*\*عنوان|عنوان الفيديو|العنوان:)/);
+          const match = rawText.match(/(###|\*\*Title|\*\*Video Title|Title:|عنوان|ناونیشان)/i);
           if (match) {
             rawText = rawText.substring(match.index);
           }
